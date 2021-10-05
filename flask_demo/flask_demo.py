@@ -11,14 +11,14 @@ def hello_world():
 
 
 @app.route('/start/', defaults={'page': 0})
-@app.route('/start/page/<int:page>')
+@app.route('/start/page/<int:page>/')
 def show_users(page):
     return str(page)
 
 # URL Building
 
 
-@app.route('/user/<username>')
+@app.route('/user/<username>/')
 def profile(username):
     # return f'{username}\'s profile'
     return render_template('hello.html', name=username)
@@ -40,7 +40,7 @@ def log_the_user_in(username):
     return redirect(url_for('profile', username=username))
 
 
-@app.route('/login', methods=['POST', 'GET'])
+@app.route('/login/', methods=['POST', 'GET'])
 def login():
     error = None
     if request.method == 'POST':
@@ -72,7 +72,7 @@ def page_not_found(error):
 # APIs with JSON
 
 
-@app.route("/new-user", methods=['POST', 'GET'])
+@app.route("/new-user/", methods=['POST', 'GET'])
 def new_user():
     if request.method == 'POST':
         return {
