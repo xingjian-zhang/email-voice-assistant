@@ -9,4 +9,4 @@ set -Eeuo pipefail
 export FLASK_APP=backend
 # export FLASK_ENV=development
 # Run the development server on port 8000/3000
-flask run --host 0.0.0.0 --port 5001
+flask run --host 0.0.0.0 --port 3000
