@@ -10,3 +10,6 @@ app = flask.Flask("backend")  # pylint: disable=invalid-name
 app.config.from_object('backend.config')
 
 ezgmail.init(tokenFile=TOKEN_FILE, credentialsFile=CREDENTIALS_FILE)
+
+import backend.api
+import backend.views
