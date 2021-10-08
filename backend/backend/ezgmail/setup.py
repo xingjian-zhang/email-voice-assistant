@@ -13,7 +13,7 @@ setup(
     author_email='al@inventwithpython.com',
     license='GPLv3+',
     packages=find_packages(where='ezgmail'),
-    package_dir={'': 'ezgmail'},
+    package_dir={'': '.'},
     test_suite='tests',
     install_requires=['google-api-python-client', 'oauth2client'],
     keywords='',
