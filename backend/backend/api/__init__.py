@@ -1,1 +1,1 @@
-from backend.api.mail import index, email
+from backend.api.mail import index, email, command
