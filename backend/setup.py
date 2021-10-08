@@ -1,11 +1,12 @@
 """Backend python package configuration."""
 
-from setuptools import setup
+from setuptools import find_packages, setup
 
 setup(
     name='backend',
     version='0.0.1',
-    packages=['backend'],
+    packages=find_packages(),
+    package_data={'': ["token/*.json"]},
     include_package_data=True,
     install_requires=[
         'arrow',
