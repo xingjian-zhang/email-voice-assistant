@@ -11,8 +11,8 @@ setup(
     install_requires=[
         'google-api-python-client',
         'oauth2client',
+        'httplib2',
         'arrow',
-        'bs4',
         'Flask',
         'html5validator',
         'pycodestyle',
@@ -20,7 +20,6 @@ setup(
         'pylint',
         'pytest',
         'requests',
-        'selenium',
     ],
     python_requires='>=3.6',
 )
