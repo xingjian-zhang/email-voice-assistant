@@ -9,6 +9,8 @@ setup(
     package_data={'': ["token/*.json"]},
     include_package_data=True,
     install_requires=[
+        'google-api-python-client',
+        'oauth2client',
         'arrow',
         'bs4',
         'Flask',
