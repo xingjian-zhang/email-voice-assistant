@@ -151,23 +151,19 @@ class GmailThread:
         """Move every message in this thread to the Trash folder. It will be automatically removed in 30 days."""
         _trash(self)  # The global _trash() function implements this feature.
 
-    # NOTE: Let's see if there's any demand for replying to threads instead of particular messages before adding these methods:
     def reply(self, body, attachments=None, cc=None, bcc=None, mimeSubtype="plain"):
         """Like the send() function, but replies to the last message in this thread."""
 
-        # NOTE: Since the ``sender`` argument is ignored by Gmail anyway, I'm not including in this method the
-        # way it is included in ``send()``.
         self.messages[-1].reply(body, attachments=attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype)
 
     def replyAll(self, body, attachments=None, cc=None, bcc=None, mimeSubtype="plain"):
         """Like the send() function, but replies to the last message in this thread."""
 
-        # NOTE: Since the ``sender`` argument is ignored by Gmail anyway, I'm not including in this method the
-        # way it is included in ``send()``.
         self.messages[-1].replyAll(body, attachments=attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype)
 
     def forward(self, recipient, body, attachments=None, cc=None, bcc=None, mimeSubtype="plain"):
         self.messages[-1].forward(recipient, body, attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype)
+
 
     def moveTospam(self):
         _moveTospam(self)
@@ -428,7 +424,7 @@ class GmailMessage:
         #    1. The Subject headers match
         #    2. The References and In-Reply-To headers follow the RFC 2822 standard.
 
-        send(self.sender, self.subject, body, attachments=attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype,
+        send(self.sender, "Re: " +self.subject, body, attachments=attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype,
              _threadId=self.threadId)
 
     def replyAll(self, body, attachments=None, cc=None, bcc=None, mimeSubtype="plain"):
@@ -436,14 +432,15 @@ class GmailMessage:
 
         # NOTE: Since the ``sender`` argument is ignored by Gmail anyway, I'm not including in this method the
         # way it is included in ``send()``.
-        pass
         # TODO - I need to remove EMAIL_ADDRESS from the first argument here:
-        # send(self.sender + ', ' + self.recipient, self.subject, body, attachments=attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype, _threadId=self.threadId)
+        send(self.sender + ', ' + self.recipient, self.subject, body, attachments=attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype, _threadId=self.threadId)
 
     def forward(self, recipient, body, attachments=None, cc=None, bcc=None, mimeSubtype="plain"):
         # TODO: add extra attachments
         send(recipient, "fwd: " + self.subject, body + self.body, attachments=self.attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype,
              _threadId=self.threadId)
+    
+
 
 def _parseContentTypeHeaderForEncoding(value):
     """Helper function called by GmailMessage:__init__()."""
