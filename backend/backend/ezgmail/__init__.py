@@ -53,6 +53,7 @@ SERVICE_GMAIL = None
 # False if not logged in, otherwise the string of the email address of the logged in user.
 EMAIL_ADDRESS = False
 LOGGED_IN = False  # False if not logged in, otherwise True
+SNOOZE_LABEL = 'Snooze'
 
 
 class EZGmailException(Exception):
@@ -166,6 +167,11 @@ class GmailThread:
     def trash(self):
         """Move every message in this thread to the Trash folder. It will be automatically removed in 30 days."""
         _trash(self)  # The global _trash() function implements this feature.
+
+    def important(self):
+        """Mark every message in this thread as important. (This does the same thing as adding the IMPORTANT label to the
+        messages.)"""
+        _important(self)
 
     def reply(self, body, attachments=None, cc=None, bcc=None, mimeSubtype="plain"):
         """Like the send() function, but replies to the last message in this thread."""
@@ -451,6 +457,10 @@ class GmailMessage:
     def trash(self):
         """Move this message to the Trash folder. It will be automatically removed in 30 days."""
         _trash(self)  # The global _trash() function implements this feature.
+
+    def important(self):
+        """Mark this msg as important"""
+        _important(self)
 
     def reply(self, body, attachments=None, cc=None, bcc=None, mimeSubtype="plain"):
         """Like the send() function, but replies to the last message in this thread."""
@@ -890,6 +900,10 @@ def _trash(gmailObjects, userId="me"):
                 SERVICE_GMAIL.users().threads().trash(userId=userId, id=obj.id).execute()
             elif isinstance(obj, GmailMessage):
                 SERVICE_GMAIL.users().messages().trash(userId=userId, id=obj.id).execute()
+
+
+def _important(gmailObjects, userID="me"):
+    _addLabel(gmailObjects, "IMPORTANT", userID)
 
 
 init(_raiseException=False)
