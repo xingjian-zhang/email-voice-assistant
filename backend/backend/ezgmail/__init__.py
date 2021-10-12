@@ -26,7 +26,6 @@ ezgmail.init(), which causes the gmail api
 
 """
 
-
 import base64
 from email.mime.audio import MIMEAudio
 from email.mime.base import MIMEBase
@@ -46,7 +45,8 @@ from httplib2 import Http
 from oauth2client import file, client, tools
 
 # Copied from https://emailregex.com/:
-EMAIL_ADDRESS_REGEX = re.compile(r'''(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])''')
+EMAIL_ADDRESS_REGEX = re.compile(
+    r'''(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])''')
 
 # SCOPES = 'https://www.googleapis.com/auth/gmail.readonly' # read-only mode
 SCOPES = "https://mail.google.com/"  # read-write mode
@@ -104,7 +104,8 @@ class GmailThread:
                 self._messages.append(GmailMessage(msg))
 
         # Quick sanity check to make sure it's never possible to have a GmailThread object with zero messages:
-        assert len(self._messages) > 0, "GmailThread object has zero messages; please file a new bug report issue: https://github.com/asweigart/ezgmail/issues"
+        assert len(
+            self._messages) > 0, "GmailThread object has zero messages; please file a new bug report issue: https://github.com/asweigart/ezgmail/issues"
 
         return self._messages  # TODO - Return copy.deepcopy(self._messages)? Would that be safer?
 
@@ -152,21 +153,25 @@ class GmailThread:
 
     # NOTE: Let's see if there's any demand for replying to threads instead of particular messages before adding these methods:
     def reply(self, body, attachments=None, cc=None, bcc=None, mimeSubtype="plain"):
-       """Like the send() function, but replies to the last message in this thread."""
-    
-       # NOTE: Since the ``sender`` argument is ignored by Gmail anyway, I'm not including in this method the
-       # way it is included in ``send()``.
-       self.messages[-1].reply(body, attachments=attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype)
-    
+        """Like the send() function, but replies to the last message in this thread."""
+
+        # NOTE: Since the ``sender`` argument is ignored by Gmail anyway, I'm not including in this method the
+        # way it is included in ``send()``.
+        self.messages[-1].reply(body, attachments=attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype)
+
     def replyAll(self, body, attachments=None, cc=None, bcc=None, mimeSubtype="plain"):
-       """Like the send() function, but replies to the last message in this thread."""
-    
-       # NOTE: Since the ``sender`` argument is ignored by Gmail anyway, I'm not including in this method the
-       # way it is included in ``send()``.
-       self.messages[-1].replyAll(body, attachments=attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype)
+        """Like the send() function, but replies to the last message in this thread."""
+
+        # NOTE: Since the ``sender`` argument is ignored by Gmail anyway, I'm not including in this method the
+        # way it is included in ``send()``.
+        self.messages[-1].replyAll(body, attachments=attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype)
+
+    def forward(self, recipient, body, attachments=None, cc=None, bcc=None, mimeSubtype="plain"):
+        self.messages[-1].forward(recipient, body, attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype)
 
     def moveTospam(self):
-       _moveTospam(self)
+        _moveTospam(self)
+
 
 def removeQuotedParts(emailText):
     """Returns the text in ``emailText`` up to the quoted "reply" text that begins with
@@ -227,7 +232,7 @@ class GmailMessage:
         # Find the headers for the sender, recipient, and subject
         for header in messageObj["payload"]["headers"]:
             if (
-                header["name"].upper() == "FROM"
+                    header["name"].upper() == "FROM"
             ):  # NOTE: I'm not sure if upper() is needed, but I use it in this method just in case.
                 self.sender = header["value"]
             if header["name"].upper() == "TO":
@@ -330,10 +335,10 @@ class GmailMessage:
 
         attachmentObj = (
             SERVICE_GMAIL.users()
-            .messages()
-            .attachments()
-            .get(id=self._attachmentsInfo[attachmentIndex]["id"], messageId=self.id, userId="me")
-            .execute()
+                .messages()
+                .attachments()
+                .get(id=self._attachmentsInfo[attachmentIndex]["id"], messageId=self.id, userId="me")
+                .execute()
         )
 
         attachmentData = base64.urlsafe_b64decode(
@@ -371,10 +376,10 @@ class GmailMessage:
         for attachmentInfo in self._attachmentsInfo:
             attachmentObj = (
                 SERVICE_GMAIL.users()
-                .messages()
-                .attachments()
-                .get(id=attachmentInfo["id"], messageId=self.id, userId="me")
-                .execute()
+                    .messages()
+                    .attachments()
+                    .get(id=attachmentInfo["id"], messageId=self.id, userId="me")
+                    .execute()
             )
 
             attachmentData = base64.urlsafe_b64decode(
@@ -423,7 +428,8 @@ class GmailMessage:
         #    1. The Subject headers match
         #    2. The References and In-Reply-To headers follow the RFC 2822 standard.
 
-        send(self.sender, self.subject, body, attachments=attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype, _threadId=self.threadId)
+        send(self.sender, self.subject, body, attachments=attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype,
+             _threadId=self.threadId)
 
     def replyAll(self, body, attachments=None, cc=None, bcc=None, mimeSubtype="plain"):
         """Like the send() function, but replies to the last message in this thread."""
@@ -432,8 +438,12 @@ class GmailMessage:
         # way it is included in ``send()``.
         pass
         # TODO - I need to remove EMAIL_ADDRESS from the first argument here:
-        #send(self.sender + ', ' + self.recipient, self.subject, body, attachments=attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype, _threadId=self.threadId)
+        # send(self.sender + ', ' + self.recipient, self.subject, body, attachments=attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype, _threadId=self.threadId)
 
+    def forward(self, recipient, body, attachments=None, cc=None, bcc=None, mimeSubtype="plain"):
+        # TODO: add extra attachments
+        send(recipient, "fwd: " + self.subject, body + self.body, attachments=self.attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype,
+             _threadId=self.threadId)
 
 def _parseContentTypeHeaderForEncoding(value):
     """Helper function called by GmailMessage:__init__()."""
@@ -512,7 +522,8 @@ def _createMessage(sender, recipient, subject, body, cc=None, bcc=None, mimeSubt
     return rawMessage
 
 
-def _createMessageWithAttachments(sender, recipient, subject, body, attachments, cc=None, bcc=None, mimeSubtype="plain", _threadId=None):
+def _createMessageWithAttachments(sender, recipient, subject, body, attachments, cc=None, bcc=None, mimeSubtype="plain",
+                                  _threadId=None):
     """Creates a MIMEText object and returns it as a base64 encoded string in a ``{'raw': b64_MIMEText_object}``
     dictionary, suitable for use by ``_sendMessage()`` and the ``users.messages.send()`` Gmail API. File attachments can
     also be added to this message.
@@ -591,7 +602,8 @@ def _sendMessage(message, userId="me"):
     return message
 
 
-def send(recipient, subject, body, attachments=None, sender=None, cc=None, bcc=None, mimeSubtype="plain", _threadId=None):
+def send(recipient, subject, body, attachments=None, sender=None, cc=None, bcc=None, mimeSubtype="plain",
+         _threadId=None):
     """Sends an email from the configured Gmail account.
 
     Note that the ``sender`` argument seems to be ignored by Gmail, which uses the account's actual email address.
@@ -612,7 +624,8 @@ def send(recipient, subject, body, attachments=None, sender=None, cc=None, bcc=N
     if attachments is None:
         msg = _createMessage(sender, recipient, subject, body, cc, bcc, mimeSubtype, _threadId=_threadId)
     else:
-        msg = _createMessageWithAttachments(sender, recipient, subject, body, attachments, cc, bcc, mimeSubtype, _threadId=_threadId)
+        msg = _createMessageWithAttachments(sender, recipient, subject, body, attachments, cc, bcc, mimeSubtype,
+                                            _threadId=_threadId)
     _sendMessage(msg)
 
 
@@ -647,7 +660,6 @@ def search(query, maxResults=25, userId="me"):
     return [GmailThread(threadObj) for threadObj in gmailThreads]
 
 
-
 def searchMessages(query, maxResults=25, userId='me'):
     """Same as search(), except it returns a list of GmailMessage objects instead of GmailThread. You probably want to use search() instea dof this function."""
     if SERVICE_GMAIL is None: init()
@@ -655,7 +667,7 @@ def searchMessages(query, maxResults=25, userId='me'):
     response = SERVICE_GMAIL.users().messages().list(userId=userId, q=query, maxResults=maxResults).execute()
     messages = []
     if 'messages' in response:
-      messages.extend(response['messages'])
+        messages.extend(response['messages'])
 
     """
     while 'nextPageToken' in response:
@@ -665,7 +677,8 @@ def searchMessages(query, maxResults=25, userId='me'):
       messages.extend(response['messages'])
     """
 
-    return [GmailMessage(SERVICE_GMAIL.users().messages().get(userId=userId, id=message['id']).execute()) for message in messages]
+    return [GmailMessage(SERVICE_GMAIL.users().messages().get(userId=userId, id=message['id']).execute()) for message in
+            messages]
 
 
 def getMessage(query, userId='me'):
@@ -677,7 +690,6 @@ def getMessage(query, userId='me'):
         raise Exception('No message matching that query found.')
     else:
         return messages[0]
-        
 
 
 def recent(maxResults=25, userId="me"):
@@ -724,7 +736,8 @@ def summary(gmailObjects, printInfo=True):
 
 def removeLabel(*args, **kwargs):
     # This deprecation warning added in version 2020.9.30:
-    warnings.warn('Do not call the removeLabel() function directly, but rather the removeLabel() methods in the GmailMessage and GmailThread classes.')
+    warnings.warn(
+        'Do not call the removeLabel() function directly, but rather the removeLabel() methods in the GmailMessage and GmailThread classes.')
     _removeLabel(*args, **kwargs)
 
 
@@ -746,7 +759,8 @@ def _removeLabel(gmailObjects, label, userId="me"):
 
 def addLabel(*args, **kwargs):
     # This deprecation warning added in version 2020.9.30:
-    warnings.warn('Do not call the addLabel() function directly, but rather the addLabel() methods in the GmailMessage and GmailThread classes.')
+    warnings.warn(
+        'Do not call the addLabel() function directly, but rather the addLabel() methods in the GmailMessage and GmailThread classes.')
     _addLabel(*args, **kwargs)
 
 
@@ -768,7 +782,8 @@ def _addLabel(gmailObjects, label, userId="me"):
 
 def markAsRead(*args, **kwargs):
     # This deprecation warning added in version 2020.9.30:
-    warnings.warn('Do not call the markAsRead() function directly, but rather the markAsRead() methods in the GmailMessage and GmailThread classes.')
+    warnings.warn(
+        'Do not call the markAsRead() function directly, but rather the markAsRead() methods in the GmailMessage and GmailThread classes.')
     _markAsRead(*args, **kwargs)
 
 
@@ -779,7 +794,8 @@ def _markAsRead(gmailObjects, userId="me"):
 
 def markAsUnread(*args, **kwargs):
     # This deprecation warning added in version 2020.9.30:
-    warnings.warn('Do not call the markAsUnread() function directly, but rather the markAsUnread() methods in the GmailMessage and GmailThread classes.')
+    warnings.warn(
+        'Do not call the markAsUnread() function directly, but rather the markAsUnread() methods in the GmailMessage and GmailThread classes.')
     _markAsUnread(*args, **kwargs)
 
 
@@ -805,7 +821,7 @@ def _trash(gmailObjects, userId="me"):
 def _moveTospam(gmailObjects, userID="me"):
     if SERVICE_GMAIL is None:
         init()
-        
+
     if isinstance(gmailObjects, (GmailThread, GmailMessage)):
         gmailObjects = [gmailObjects]  # Make this uniformly in a list.
 
@@ -814,5 +830,6 @@ def _moveTospam(gmailObjects, userID="me"):
                 SERVICE_GMAIL.users().threads().trash(userId=userId, id=obj.id).execute()
             elif isinstance(obj, GmailMessage):
                 SERVICE_GMAIL.users().messages().trash(userId=userId, id=obj.id).execute()
+
 
 init(_raiseException=False)
