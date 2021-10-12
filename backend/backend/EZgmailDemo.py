@@ -102,20 +102,21 @@ def Reply(GmailThreadObject, body, attachments=None, cc=None, bcc=None, mimeSubt
     """
     GmailThreadObject.reply(body, attachments, cc, bcc, mimeSubtype)
 
-def Forward(recipient, subject=None, body=None, attachments=None, cc=None):
+def Forward(GmailThreadObject, recipient, subject=None, body=None, attachments=None, cc=None):
     """
     Forward an email.
     """
-    ezgmail.forward(recipient, subject, body, attachments, cc)
+    GmailThreadObject.forward(recipient, subject, body, attachments, cc)
 
 
 if __name__ == '__main__':
-    search('subject:test ezgmail')
-    send('ruiyu.li@sjtu.edu.cn', 'test ezgmail send one', 'Hi,\nHere is the testing message for sending.\nSincerely,\nIris')
+    #search('subject:test ezgmail')
+    #send('ruiyu.li@sjtu.edu.cn', 'test ezgmail send one', 'Hi,\nHere is the testing message for sending.\nSincerely,\nIris')
     unreadThreads = unread()
     recentThreads = recent()
-    Reply(recentThreads[0], "hey I am testing. Iris")
-    delete(recentThreads[0])
-    MardAsRead(unreadThreads[0])
-    MardAsUnread(recentThreads[0])
-    DownloadAttachments(recentThreads[0])
+    #Reply(recentThreads[0], "hey I am testing. Iris")
+    Forward(recentThreads[0], "ruiyuli@umich.edu", "hey I am testing. Iris")
+    #delete(recentThreads[0])
+    #MardAsRead(unreadThreads[0])
+    #MardAsUnread(recentThreads[0])
+    #DownloadAttachments(recentThreads[0])
