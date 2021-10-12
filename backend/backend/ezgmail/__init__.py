@@ -148,9 +148,14 @@ class GmailThread:
         _markAsUnread(self)  # The global _markAsUnread() function implements this feature.
 
     def markAsSpam(self):
-        """Mark every message in this thread as unread. (This does the same thing as adding the SPAM label to the
+        """Mark every message in this thread as spam. (This does the same thing as adding the SPAM label to the
         messages.)"""
         _markAsSpam(self)
+
+    def star(self):
+        """Mark every message in this thread as star. (This does the same thing as adding the STARRED label to the
+        messages.)"""   
+        _star(self)
 
     def trash(self):
         """Move every message in this thread to the Trash folder. It will be automatically removed in 30 days."""
@@ -414,6 +419,10 @@ class GmailMessage:
     def markAsSpam(self):
         """Mark this msg as spam"""
         _markAsSpam(self)
+
+    def star(self):
+        """Mark this msg as star"""
+        _star(self)
 
     def trash(self):
         """Move this message to the Trash folder. It will be automatically removed in 30 days."""
@@ -808,6 +817,9 @@ def _markAsUnread(gmailObjects, userId="me"):
 
 def _markAsSpam(gmailObjects, userID="me"):
     _addLabel(gmailObjects, "SPAM", userID)
+
+def _star(gmailObjects, userID="me"):
+    _addLabel(gmailObjects, "STARRED", userID)
 
 def _trash(gmailObjects, userId="me"):
     if SERVICE_GMAIL is None:
