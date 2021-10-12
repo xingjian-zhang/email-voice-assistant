@@ -147,6 +147,11 @@ class GmailThread:
         messages.)"""
         _markAsUnread(self)  # The global _markAsUnread() function implements this feature.
 
+    def markAsSpam(self):
+        """Mark every message in this thread as unread. (This does the same thing as adding the SPAM label to the
+        messages.)"""
+        _markAsSpam(self)
+
     def trash(self):
         """Move every message in this thread to the Trash folder. It will be automatically removed in 30 days."""
         _trash(self)  # The global _trash() function implements this feature.
@@ -164,9 +169,6 @@ class GmailThread:
     def forward(self, recipient, body, attachments=None, cc=None, bcc=None, mimeSubtype="plain"):
         self.messages[-1].forward(recipient, body, attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype)
 
-
-    def moveTospam(self):
-        _moveTospam(self)
 
 
 def removeQuotedParts(emailText):
@@ -408,6 +410,10 @@ class GmailMessage:
     def markAsUnread(self):
         """Mark this message as unread. (This does the same thing as adding the UNREAD label to the message.)"""
         _markAsUnread(self)  # The global _markAsUnread() function implements this feature.
+
+    def markAsSpam(self):
+        """Mark this msg as spam"""
+        _markAsSpam(self)
 
     def trash(self):
         """Move this message to the Trash folder. It will be automatically removed in 30 days."""
@@ -800,6 +806,8 @@ def _markAsUnread(gmailObjects, userId="me"):
     # This is a helper function not meant to be called directly by the user.
     _addLabel(gmailObjects, "UNREAD", userId)
 
+def _markAsSpam(gmailObjects, userID="me"):
+    _addLabel(gmailObjects, "SPAM", userID)
 
 def _trash(gmailObjects, userId="me"):
     if SERVICE_GMAIL is None:
@@ -815,18 +823,6 @@ def _trash(gmailObjects, userId="me"):
                 SERVICE_GMAIL.users().messages().trash(userId=userId, id=obj.id).execute()
 
 
-def _moveTospam(gmailObjects, userID="me"):
-    if SERVICE_GMAIL is None:
-        init()
-
-    if isinstance(gmailObjects, (GmailThread, GmailMessage)):
-        gmailObjects = [gmailObjects]  # Make this uniformly in a list.
-
-        for obj in gmailObjects:
-            if isinstance(obj, GmailThread):
-                SERVICE_GMAIL.users().threads().trash(userId=userId, id=obj.id).execute()
-            elif isinstance(obj, GmailMessage):
-                SERVICE_GMAIL.users().messages().trash(userId=userId, id=obj.id).execute()
 
 
 init(_raiseException=False)
