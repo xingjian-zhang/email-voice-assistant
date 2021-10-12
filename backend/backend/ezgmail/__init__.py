@@ -4,6 +4,22 @@
 # Note: Unless you know what you're doing, also use the default 'me' value for userId parameters in this module.
 
 
+from oauth2client import file, client, tools
+from httplib2 import Http
+from googleapiclient.discovery import build
+import warnings
+import copy
+import re
+import datetime
+import os
+import mimetypes
+from email import encoders
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.image import MIMEImage
+from email.mime.base import MIMEBase
+from email.mime.audio import MIMEAudio
+import base64
 __version__ = "2021.08.05"
 
 """
@@ -26,23 +42,6 @@ ezgmail.init(), which causes the gmail api
 
 """
 
-import base64
-from email.mime.audio import MIMEAudio
-from email.mime.base import MIMEBase
-from email.mime.image import MIMEImage
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email import encoders
-import mimetypes
-import os
-import datetime
-import re
-import copy
-import warnings
-
-from googleapiclient.discovery import build
-from httplib2 import Http
-from oauth2client import file, client, tools
 
 # Copied from https://emailregex.com/:
 EMAIL_ADDRESS_REGEX = re.compile(
@@ -51,7 +50,8 @@ EMAIL_ADDRESS_REGEX = re.compile(
 # SCOPES = 'https://www.googleapis.com/auth/gmail.readonly' # read-only mode
 SCOPES = "https://mail.google.com/"  # read-write mode
 SERVICE_GMAIL = None
-EMAIL_ADDRESS = False  # False if not logged in, otherwise the string of the email address of the logged in user.
+# False if not logged in, otherwise the string of the email address of the logged in user.
+EMAIL_ADDRESS = False
 LOGGED_IN = False  # False if not logged in, otherwise True
 
 
@@ -98,7 +98,8 @@ class GmailThread:
             self._messages = []
 
             # The threadObj returned by the list() api doesn't include the messages list, so we need to call the get() api
-            self.extendedThreadObj = SERVICE_GMAIL.users().threads().get(userId="me", id=self.id).execute()
+            self.extendedThreadObj = SERVICE_GMAIL.users().threads().get(
+                userId="me", id=self.id).execute()
 
             for msg in self.extendedThreadObj["messages"]:
                 self._messages.append(GmailMessage(msg))
@@ -107,7 +108,8 @@ class GmailThread:
         assert len(
             self._messages) > 0, "GmailThread object has zero messages; please file a new bug report issue: https://github.com/asweigart/ezgmail/issues"
 
-        return self._messages  # TODO - Return copy.deepcopy(self._messages)? Would that be safer?
+        # TODO - Return copy.deepcopy(self._messages)? Would that be safer?
+        return self._messages
 
     def __str__(self):
         return self.__repr__()
@@ -131,21 +133,25 @@ class GmailThread:
 
     def addLabel(self, label):
         """Add the label ``label`` to every message in this thread."""
-        _addLabel(self, label)  # The global _addLabel() function implements this feature.
+        _addLabel(
+            self, label)  # The global _addLabel() function implements this feature.
 
     def removeLabel(self, label):
         """Remove the label ``label`` from every message in this thread, if it's there."""
-        _removeLabel(self, label)  # The global _removeLabel() function implements this feature.
+        _removeLabel(
+            self, label)  # The global _removeLabel() function implements this feature.
 
     def markAsRead(self):
         """Mark every message in this thread as read. (This does the same thing as removing the UNREAD label from the
         messages.)"""
-        _markAsRead(self)  # The global _markAsRead() function implements this feature.
+        _markAsRead(
+            self)  # The global _markAsRead() function implements this feature.
 
     def markAsUnread(self):
         """Mark every message in this thread as unread. (This does the same thing as adding the UNREAD label to the
         messages.)"""
-        _markAsUnread(self)  # The global _markAsUnread() function implements this feature.
+        _markAsUnread(
+            self)  # The global _markAsUnread() function implements this feature.
 
     def markAsSpam(self):
         """Mark every message in this thread as unread. (This does the same thing as adding the SPAM label to the
@@ -159,16 +165,18 @@ class GmailThread:
     def reply(self, body, attachments=None, cc=None, bcc=None, mimeSubtype="plain"):
         """Like the send() function, but replies to the last message in this thread."""
 
-        self.messages[-1].reply(body, attachments=attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype)
+        self.messages[-1].reply(body, attachments=attachments,
+                                cc=cc, bcc=bcc, mimeSubtype=mimeSubtype)
 
     def replyAll(self, body, attachments=None, cc=None, bcc=None, mimeSubtype="plain"):
         """Like the send() function, but replies to the last message in this thread."""
 
-        self.messages[-1].replyAll(body, attachments=attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype)
+        self.messages[-1].replyAll(body, attachments=attachments,
+                                   cc=cc, bcc=bcc, mimeSubtype=mimeSubtype)
 
     def forward(self, recipient, body, attachments=None, cc=None, bcc=None, mimeSubtype="plain"):
-        self.messages[-1].forward(recipient, body, attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype)
-
+        self.messages[-1].forward(recipient, body, attachments,
+                                  cc=cc, bcc=bcc, mimeSubtype=mimeSubtype)
 
 
 def removeQuotedParts(emailText):
@@ -219,7 +227,8 @@ class GmailMessage:
 
         self.snippet = messageObj["snippet"]
         self.historyId = messageObj["historyId"]
-        self.timestamp = datetime.datetime.fromtimestamp(int(messageObj["internalDate"]) // 1000)
+        self.timestamp = datetime.datetime.fromtimestamp(
+            int(messageObj["internalDate"]) // 1000)
         self.attachments = (
             []
         )  # Filenames of the attachments (can include duplicates). This exists so the user can know what attachments exist. Can include duplicate filenames.
@@ -239,7 +248,8 @@ class GmailMessage:
                 self.subject = header["value"]
 
             if header["name"].upper() == "CONTENT-TYPE":
-                emailEncoding = _parseContentTypeHeaderForEncoding(header["value"])
+                emailEncoding = _parseContentTypeHeaderForEncoding(
+                    header["value"])
 
         # Find the plaintext email part, get the encoding, and use it to get the email body.
         if "parts" in messageObj["payload"].keys():
@@ -251,10 +261,12 @@ class GmailMessage:
                     # This is the plain text email we're looking for. Now find the encoding and the body.
                     for header in part["headers"]:
                         if header["name"].upper() == "CONTENT-TYPE":
-                            emailEncoding = _parseContentTypeHeaderForEncoding(header["value"])
+                            emailEncoding = _parseContentTypeHeaderForEncoding(
+                                header["value"])
 
                     # ``originalBody`` has the full body of the email, while the more useful ``body`` only has everything up until the quoted reply part.
-                    self.originalBody = base64.urlsafe_b64decode(part["body"]["data"]).decode(emailEncoding)
+                    self.originalBody = base64.urlsafe_b64decode(
+                        part["body"]["data"]).decode(emailEncoding)
                     self.body = removeQuotedParts(self.originalBody)
 
                 if part["mimeType"].upper() == "MULTIPART/ALTERNATIVE":
@@ -265,7 +277,8 @@ class GmailMessage:
                             # Find the encoding and the body.
                             for header in multipartPart["headers"]:
                                 if header["name"].upper() == "CONTENT-TYPE":
-                                    emailEncoding = _parseContentTypeHeaderForEncoding(header["value"])
+                                    emailEncoding = _parseContentTypeHeaderForEncoding(
+                                        header["value"])
 
                             # ``originalBody`` has the full body of the email, while the more useful ``body`` only has everything up until the quoted reply part.
                             self.originalBody = base64.urlsafe_b64decode(multipartPart["body"]["data"]).decode(
@@ -279,13 +292,15 @@ class GmailMessage:
                     attachmentSize = part["body"]["size"]
                     self.attachments.append(part["filename"])
                     self._attachmentsInfo.append(
-                        {"filename": part["filename"], "id": attachmentId, "size": attachmentSize}
+                        {"filename": part["filename"],
+                            "id": attachmentId, "size": attachmentSize}
                     )
         elif "body" in messageObj["payload"].keys():
             # for header in messageObj['payload']['headers']:
             #    if header['name'].upper() == 'CONTENT-TYPE':
             #        emailEncoding = _parseContentTypeHeaderForEncoding(header['value'])
-            self.originalBody = base64.urlsafe_b64decode(messageObj["payload"]["body"]["data"]).decode(emailEncoding)
+            self.originalBody = base64.urlsafe_b64decode(
+                messageObj["payload"]["body"]["data"]).decode(emailEncoding)
             self.body = removeQuotedParts(self.originalBody)
 
         # assert self.body is not None # Note: There's still a chance that body could have not been set.
@@ -320,7 +335,8 @@ class GmailMessage:
         If there are multiple attachments with the same name, ``duplicateIndex`` needs to be passed to specify
         which attachment to download."""
         if filename not in self.attachments:
-            raise EZGmailException("No attachment named %s found among %s" % (filename, list(self.attachments.keys())))
+            raise EZGmailException("No attachment named %s found among %s" % (
+                filename, list(self.attachments.keys())))
 
         try:
             attachmentIndex = [i for i, v in enumerate(self.attachments) if v == filename][
@@ -328,15 +344,16 @@ class GmailMessage:
             ]  # Find the duplicateIndex-th entry with this filename in self.attachments.
         except:
             raise EZGmailException(
-                "There is no attachment named %s with duplicate index %s." % (filename, duplicateIndex)
+                "There is no attachment named %s with duplicate index %s." % (
+                    filename, duplicateIndex)
             )
 
         attachmentObj = (
             SERVICE_GMAIL.users()
-                .messages()
-                .attachments()
-                .get(id=self._attachmentsInfo[attachmentIndex]["id"], messageId=self.id, userId="me")
-                .execute()
+            .messages()
+            .attachments()
+            .get(id=self._attachmentsInfo[attachmentIndex]["id"], messageId=self.id, userId="me")
+            .execute()
         )
 
         attachmentData = base64.urlsafe_b64decode(
@@ -347,7 +364,8 @@ class GmailMessage:
         if not os.path.exists(downloadFolder):
             os.makedirs(downloadFolder)
         elif os.path.isfile(downloadFolder):
-            raise EZGmailException("%s is a file, not a folder" % downloadFolder)
+            raise EZGmailException(
+                "%s is a file, not a folder" % downloadFolder)
 
         fo = open(os.path.join(downloadFolder, filename), "wb")
         fo.write(attachmentData)
@@ -357,7 +375,8 @@ class GmailMessage:
         """Download all of the attachments in this message to the local folder ``downloadFolder``. If ``overwrite`` is
         ``True``, existing local files will be overwritten by attachments with the same filename."""
         if not overwrite:
-            attachmentFilenames = [a["filename"] for a in self._attachmentsInfo]
+            attachmentFilenames = [a["filename"]
+                                   for a in self._attachmentsInfo]
             if len(attachmentFilenames) != len(set(attachmentFilenames)):
                 raise EZGmailException(
                     "There are duplicate filenames in this message's attachments. Pass overwrite=True to downloadAllAttachments() to download them anyway."
@@ -369,15 +388,16 @@ class GmailMessage:
         if not os.path.exists(downloadFolder):
             os.makedirs(downloadFolder)
         elif os.path.isfile(downloadFolder):
-            raise EZGmailException("%s is a file, not a folder" % downloadFolder)
+            raise EZGmailException(
+                "%s is a file, not a folder" % downloadFolder)
 
         for attachmentInfo in self._attachmentsInfo:
             attachmentObj = (
                 SERVICE_GMAIL.users()
-                    .messages()
-                    .attachments()
-                    .get(id=attachmentInfo["id"], messageId=self.id, userId="me")
-                    .execute()
+                .messages()
+                .attachments()
+                .get(id=attachmentInfo["id"], messageId=self.id, userId="me")
+                .execute()
             )
 
             attachmentData = base64.urlsafe_b64decode(
@@ -397,19 +417,23 @@ class GmailMessage:
 
     def addLabel(self, label):
         """Add the label ``label`` to every message in this thread."""
-        _addLabel(self, label)  # The global _addLabel() function implements this feature.
+        _addLabel(
+            self, label)  # The global _addLabel() function implements this feature.
 
     def removeLabel(self, label):
         """Remove the label ``label`` from every message in this thread, if it's there."""
-        _removeLabel(self, label)  # The global _removeLabel() function implements this feature.
+        _removeLabel(
+            self, label)  # The global _removeLabel() function implements this feature.
 
     def markAsRead(self):
         """Mark this message as read. (This does the same thing as removing the UNREAD label from the message.)"""
-        _markAsRead(self)  # The global _markAsRead() function implements this feature.
+        _markAsRead(
+            self)  # The global _markAsRead() function implements this feature.
 
     def markAsUnread(self):
         """Mark this message as unread. (This does the same thing as adding the UNREAD label to the message.)"""
-        _markAsUnread(self)  # The global _markAsUnread() function implements this feature.
+        _markAsUnread(
+            self)  # The global _markAsUnread() function implements this feature.
 
     def markAsSpam(self):
         """Mark this msg as spam"""
@@ -430,7 +454,7 @@ class GmailMessage:
         #    1. The Subject headers match
         #    2. The References and In-Reply-To headers follow the RFC 2822 standard.
 
-        send(self.sender, "Re: " +self.subject, body, attachments=attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype,
+        send(self.sender, "Re: " + self.subject, body, attachments=attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype,
              _threadId=self.threadId)
 
     def replyAll(self, body, attachments=None, cc=None, bcc=None, mimeSubtype="plain"):
@@ -439,20 +463,30 @@ class GmailMessage:
         # NOTE: Since the ``sender`` argument is ignored by Gmail anyway, I'm not including in this method the
         # way it is included in ``send()``.
         # TODO - I need to remove EMAIL_ADDRESS from the first argument here:
-        send(self.sender + ', ' + self.recipient, self.subject, body, attachments=attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype, _threadId=self.threadId)
+        send(self.sender + ', ' + self.recipient, self.subject, body, attachments=attachments,
+             cc=cc, bcc=bcc, mimeSubtype=mimeSubtype, _threadId=self.threadId)
 
     def forward(self, recipient, body, attachments=None, cc=None, bcc=None, mimeSubtype="plain"):
         # TODO: add extra attachments
-        send(recipient, "fwd: " + self.subject, body + self.body, attachments=self.attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype,
+        send(recipient, f"fwd: {self.subject}", self.forwardBody(body), attachments=self.attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype,
              _threadId=self.threadId)
-    
+
+    def forwardBody(self, body):
+        forward_body = body + '\n\n' + "---------- Forwarded message ---------\n"
+        forward_body += f"From: {self.sender}\n"
+        forward_body += f"Date: {self.timestamp}\n"
+        forward_body += f"Subject: {self.subject}\n"
+        forward_body += f"To: {self.sender}\n\n"
+        forward_body += self.body
+        return forward_body
 
 
 def _parseContentTypeHeaderForEncoding(value):
     """Helper function called by GmailMessage:__init__()."""
     mo = re.search('charset="(.*?)"', value)
     if mo is None:
-        emailEncoding = "UTF-8"  # We're going to assume UTF-8 and hope for the best. "Safety not guaranteed."
+        # We're going to assume UTF-8 and hope for the best. "Safety not guaranteed."
+        emailEncoding = "UTF-8"
     else:
         emailEncoding = mo.group(1)
     return emailEncoding
@@ -488,7 +522,8 @@ def init(userId="me", tokenFile="token.json", credentialsFile="credentials.json"
             flow = client.flow_from_clientsecrets(credentialsFile, SCOPES)
             creds = tools.run_flow(flow, store)
         SERVICE_GMAIL = build("gmail", "v1", http=creds.authorize(Http()))
-        EMAIL_ADDRESS = SERVICE_GMAIL.users().getProfile(userId=userId).execute()["emailAddress"]
+        EMAIL_ADDRESS = SERVICE_GMAIL.users().getProfile(
+            userId=userId).execute()["emailAddress"]
         LOGGED_IN = bool(EMAIL_ADDRESS)
 
         return EMAIL_ADDRESS
@@ -505,10 +540,12 @@ def _createMessage(sender, recipient, subject, body, cc=None, bcc=None, mimeSubt
 
     Note that the ``sender`` argument seems to be ignored by Gmail, which uses the account's actual email addresss."""
     if not isinstance(mimeSubtype, str):
-        raise EZGmailTypeError('wrong type passed for mimeSubtype arg; must be "plain" or "html"')
+        raise EZGmailTypeError(
+            'wrong type passed for mimeSubtype arg; must be "plain" or "html"')
     mimeSubtype = mimeSubtype.lower()
     if mimeSubtype not in ("html", "plain"):
-        raise EZGmailValueError('wrong string passed for mimeSubtype arg; must be "plain" or "html"')
+        raise EZGmailValueError(
+            'wrong string passed for mimeSubtype arg; must be "plain" or "html"')
 
     message = MIMEText(body, mimeSubtype)
     message["to"] = recipient
@@ -519,7 +556,8 @@ def _createMessage(sender, recipient, subject, body, cc=None, bcc=None, mimeSubt
     if bcc is not None:
         message["bcc"] = bcc
 
-    rawMessage = {"raw": base64.urlsafe_b64encode(message.as_bytes()).decode("ascii")}
+    rawMessage = {"raw": base64.urlsafe_b64encode(
+        message.as_bytes()).decode("ascii")}
     if _threadId is not None:
         rawMessage['threadId'] = _threadId
     return rawMessage
@@ -540,10 +578,12 @@ def _createMessageWithAttachments(sender, recipient, subject, body, attachments,
     Note that the ``sender`` argument seems to be ignored by Gmail, which uses the account's actual email address.
     """
     if not isinstance(mimeSubtype, str):
-        raise EZGmailTypeError('wrong type passed for mimeSubtype arg; must be "plain" or "html"')
+        raise EZGmailTypeError(
+            'wrong type passed for mimeSubtype arg; must be "plain" or "html"')
     mimeSubtype = mimeSubtype.lower()
     if mimeSubtype not in ("html", "plain"):
-        raise EZGmailValueError('wrong string passed for mimeSubtype arg; mimeSubtype arg must be "plain" or "html"')
+        raise EZGmailValueError(
+            'wrong string passed for mimeSubtype arg; mimeSubtype arg must be "plain" or "html"')
 
     message = MIMEMultipart()
     message["to"] = recipient
@@ -558,13 +598,15 @@ def _createMessageWithAttachments(sender, recipient, subject, body, attachments,
     message.attach(messageMimeTextPart)
 
     if isinstance(attachments, str):
-        attachments = [attachments]  # If it's a string, put ``attachments`` in a list.
+        # If it's a string, put ``attachments`` in a list.
+        attachments = [attachments]
 
     for attachment in attachments:
         # Check that the file exists.
         if not os.path.exists(attachment):
             raise EZGmailException(
-                "%r passed for attachment but %s does not exist." % (attachment, os.path.abspath(attachment))
+                "%r passed for attachment but %s does not exist." % (
+                    attachment, os.path.abspath(attachment))
             )
 
         content_type, encoding = mimetypes.guess_type(attachment)
@@ -589,10 +631,12 @@ def _createMessageWithAttachments(sender, recipient, subject, body, attachments,
         fp.close()
 
         filename = os.path.basename(attachment)
-        mimePart.add_header("Content-Disposition", "attachment", filename=filename)
+        mimePart.add_header("Content-Disposition",
+                            "attachment", filename=filename)
         message.attach(mimePart)
 
-    rawMessage = {"raw": base64.urlsafe_b64encode(message.as_bytes()).decode("ascii")}
+    rawMessage = {"raw": base64.urlsafe_b64encode(
+        message.as_bytes()).decode("ascii")}
     if _threadId is not None:
         rawMessage['threadId'] = _threadId
     return rawMessage
@@ -601,7 +645,8 @@ def _createMessageWithAttachments(sender, recipient, subject, body, attachments,
 def _sendMessage(message, userId="me"):
     """Sends an email based on the ``message`` object, which is returned by ``_createMessage()`` or
     ``_createMessageWithAttachments()``."""
-    message = SERVICE_GMAIL.users().messages().send(userId=userId, body=message).execute()
+    message = SERVICE_GMAIL.users().messages().send(
+        userId=userId, body=message).execute()
     return message
 
 
@@ -613,10 +658,12 @@ def send(recipient, subject, body, attachments=None, sender=None, cc=None, bcc=N
 
     TODO - Add additional details to this docstring."""
     if not isinstance(mimeSubtype, str):
-        raise EZGmailTypeError('wrong type passed for mimeSubtype arg; must be "plain" or "html"')
+        raise EZGmailTypeError(
+            'wrong type passed for mimeSubtype arg; must be "plain" or "html"')
     mimeSubtype = mimeSubtype.lower()
     if mimeSubtype not in ("html", "plain"):
-        raise EZGmailValueError('wrong string passed for mimeSubtype arg; mimeSubtype arg must be "plain" or "html"')
+        raise EZGmailValueError(
+            'wrong string passed for mimeSubtype arg; mimeSubtype arg must be "plain" or "html"')
 
     if SERVICE_GMAIL is None:
         init()
@@ -625,7 +672,8 @@ def send(recipient, subject, body, attachments=None, sender=None, cc=None, bcc=N
         sender = EMAIL_ADDRESS
 
     if attachments is None:
-        msg = _createMessage(sender, recipient, subject, body, cc, bcc, mimeSubtype, _threadId=_threadId)
+        msg = _createMessage(sender, recipient, subject,
+                             body, cc, bcc, mimeSubtype, _threadId=_threadId)
     else:
         msg = _createMessageWithAttachments(sender, recipient, subject, body, attachments, cc, bcc, mimeSubtype,
                                             _threadId=_threadId)
@@ -648,7 +696,8 @@ def search(query, maxResults=25, userId="me"):
     if SERVICE_GMAIL is None:
         init()
 
-    response = SERVICE_GMAIL.users().threads().list(userId=userId, q=query, maxResults=maxResults).execute()
+    response = SERVICE_GMAIL.users().threads().list(
+        userId=userId, q=query, maxResults=maxResults).execute()
     gmailThreads = []
     if "threads" in response:
         gmailThreads.extend(response["threads"])
@@ -665,9 +714,11 @@ def search(query, maxResults=25, userId="me"):
 
 def searchMessages(query, maxResults=25, userId='me'):
     """Same as search(), except it returns a list of GmailMessage objects instead of GmailThread. You probably want to use search() instea dof this function."""
-    if SERVICE_GMAIL is None: init()
+    if SERVICE_GMAIL is None:
+        init()
 
-    response = SERVICE_GMAIL.users().messages().list(userId=userId, q=query, maxResults=maxResults).execute()
+    response = SERVICE_GMAIL.users().messages().list(
+        userId=userId, q=query, maxResults=maxResults).execute()
     messages = []
     if 'messages' in response:
         messages.extend(response['messages'])
@@ -686,7 +737,8 @@ def searchMessages(query, maxResults=25, userId='me'):
 
 def getMessage(query, userId='me'):
     """Return a GmailMessage object of the first search result for ``query``. Essentially a wrapper for search()."""
-    if SERVICE_GMAIL is None: init()
+    if SERVICE_GMAIL is None:
+        init()
 
     messages = searchMessages(query, 1, userId)
     if messages == []:
@@ -755,9 +807,11 @@ def _removeLabel(gmailObjects, label, userId="me"):
     removeUnreadLabelObj = {"removeLabelIds": [label], "addLabelIds": []}
     for obj in gmailObjects:
         if isinstance(obj, GmailThread):
-            SERVICE_GMAIL.users().threads().modify(userId=userId, id=obj.id, body=removeUnreadLabelObj).execute()
+            SERVICE_GMAIL.users().threads().modify(
+                userId=userId, id=obj.id, body=removeUnreadLabelObj).execute()
         elif isinstance(obj, GmailMessage):
-            SERVICE_GMAIL.users().messages().modify(userId=userId, id=obj.id, body=removeUnreadLabelObj).execute()
+            SERVICE_GMAIL.users().messages().modify(
+                userId=userId, id=obj.id, body=removeUnreadLabelObj).execute()
 
 
 def addLabel(*args, **kwargs):
@@ -778,9 +832,11 @@ def _addLabel(gmailObjects, label, userId="me"):
     removeUnreadLabelObj = {"removeLabelIds": [], "addLabelIds": [label]}
     for obj in gmailObjects:
         if isinstance(obj, GmailThread):
-            SERVICE_GMAIL.users().threads().modify(userId=userId, id=obj.id, body=removeUnreadLabelObj).execute()
+            SERVICE_GMAIL.users().threads().modify(
+                userId=userId, id=obj.id, body=removeUnreadLabelObj).execute()
         elif isinstance(obj, GmailMessage):
-            SERVICE_GMAIL.users().messages().modify(userId=userId, id=obj.id, body=removeUnreadLabelObj).execute()
+            SERVICE_GMAIL.users().messages().modify(
+                userId=userId, id=obj.id, body=removeUnreadLabelObj).execute()
 
 
 def markAsRead(*args, **kwargs):
@@ -806,8 +862,10 @@ def _markAsUnread(gmailObjects, userId="me"):
     # This is a helper function not meant to be called directly by the user.
     _addLabel(gmailObjects, "UNREAD", userId)
 
+
 def _markAsSpam(gmailObjects, userID="me"):
     _addLabel(gmailObjects, "SPAM", userID)
+
 
 def _trash(gmailObjects, userId="me"):
     if SERVICE_GMAIL is None:
@@ -821,8 +879,6 @@ def _trash(gmailObjects, userId="me"):
                 SERVICE_GMAIL.users().threads().trash(userId=userId, id=obj.id).execute()
             elif isinstance(obj, GmailMessage):
                 SERVICE_GMAIL.users().messages().trash(userId=userId, id=obj.id).execute()
-
-
 
 
 init(_raiseException=False)
