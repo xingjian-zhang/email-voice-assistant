@@ -26,3 +26,17 @@ $ ./bin/debug_backend  # debug on
 }
 
 ```
+---
+
+## NLP
+### Set up NLP module
+Recommend python3.7+
+```
+$ cd nlp
+$ pip install -e .
+```
+### Run backend module
+```
+$ ./bin/run_nlp    # debug off
+$ ./bin/debug_nlp  # debug on
+```
