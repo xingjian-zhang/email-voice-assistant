@@ -3,7 +3,8 @@ import flask
 from flask import json, request
 import backend
 import backend.ezgmail as ezgmail
-
+from oauth2client import file
+import requests
 
 @backend.app.route('/', methods=["GET"])
 def index():
@@ -26,7 +27,8 @@ def email():
 def command():
     if request.is_json:
         req_json = request.get_json()
-        req_dict = json.loads(req_json) if isinstance(req_json, str) else req_json
+        req_dict = json.loads(req_json) if isinstance(
+            req_json, str) else req_json
         try:
             _command(req_dict["id"], req_dict["command"], req_dict["args"])
         except NotImplementedError as e:
@@ -40,6 +42,21 @@ def command():
         return flask.jsonify({
             'error': 'Invalid post, should be json.'
         })
+
+@backend.app.route('/send/email/', methods=["GET"])
+def send_email():
+    email_id = request.args.get("id", default=-1, type=int)
+    message_dict = _email_to_dict(email_id)
+    if message_dict:
+        requests.post(f"http://localhost:{backend.app.config['NLP_SERVER_PORT']}/receive/email/", data=message_dict)
+    return f"Data {message_dict} sent to NLP server"
+
+@backend.app.route('/send/voice/', methods=["GET"])
+def send_voice():
+    filename = 'test.wav'
+    requests.post(f"http://localhost:{backend.app.config['NLP_SERVER_PORT']}/receive/voice/", data={'filename': filename})
+    return f"voice {filename} sent to NLP server"
+
 
 
 def _email_to_dict(email_id):

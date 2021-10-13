@@ -1,1 +1,1 @@
-from nlp.api.nlp_server import index
+from nlp.api.nlp_server import base
