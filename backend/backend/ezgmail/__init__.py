@@ -185,11 +185,6 @@ class GmailThread:
         self.messages[-1].replyAll(body, attachments=attachments,
                                    cc=cc, bcc=bcc, mimeSubtype=mimeSubtype)
 
-    def forward(self, recipient, body, attachments=None, cc=None, bcc=None, mimeSubtype="plain"):
-        self.messages[-1].forward(recipient, body, attachments,
-                                  cc=cc, bcc=bcc, mimeSubtype=mimeSubtype)
-
-
 def removeQuotedParts(emailText):
     """Returns the text in ``emailText`` up to the quoted "reply" text that begins with
     "On Sun, Jan 1, 2018 at 12:00 PM al@inventwithpython.com wrote:" part."""
