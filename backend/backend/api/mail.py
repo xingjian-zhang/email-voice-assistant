@@ -24,7 +24,7 @@ def email():
         })
 
 
-@backend.app.route("/api/command/", methods=["POST"])
+@backend.app.route("/api/command/", methods=["GET"])
 def command():
     req_dict = request.get_json(force=True)  # directly a dict
     print(req_dict)
@@ -54,24 +54,6 @@ def command():
     #     return flask.jsonify({
     #         'error': 'Invalid post, should be json.'
     #     })
-
-
-@ backend.app.route('/send/email/', methods=["GET"])
-def send_email():
-    email_id = request.args.get("id", default=-1, type=int)
-    message_dict = _email_to_dict(email_id)
-    if message_dict:
-        requests.post(
-            f"http://localhost:{backend.app.config['NLP_SERVER_PORT']}/receive/email/", data=message_dict)
-    return f"Data {message_dict} sent to NLP server"
-
-
-@ backend.app.route('/send/voice/', methods=["GET"])
-def send_voice():
-    filename = 'test.wav'
-    requests.post(
-        f"http://localhost:{backend.app.config['NLP_SERVER_PORT']}/receive/voice/", data={'filename': filename})
-    return f"voice {filename} sent to NLP server"
 
 
 def _email_to_dict(email_id):
