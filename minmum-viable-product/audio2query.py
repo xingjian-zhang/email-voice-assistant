@@ -7,11 +7,13 @@ from pydub import AudioSegment
 
 
 def get_keywords() -> set():
+
     with open("keywords.txt") as keywords_file:
         keywords = set(line.strip() for line in keywords_file.readlines())
     return keywords
 
 def audio2text(audio_file : str, verbose : bool = False) -> str:
+
     r = sr.Recognizer()
     with sr.AudioFile(audio_file) as source:
         audio_text = r.listen(source)
@@ -38,6 +40,7 @@ def text2query(text : str, keywords : set) -> dict:
     return query
 
 def text2audio(text : str, save_file : str, language="en", slow=False):
+    
     audio_obj = gTTS(text=text, lang=language, slow=slow)
     ext = os.path.splitext(save_file)[-1]
     if ext.lower() == ".mp3":
