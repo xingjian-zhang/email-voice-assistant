@@ -40,3 +40,16 @@ $ pip install -e .
 $ ./bin/run_nlp    # debug off
 $ ./bin/debug_nlp  # debug on
 ```
+---
+
+## Frontend
+### Set up frontend dependencies
+For local test, require node>=14.0.0 and npm>=5.6
+```
+$ cd frontend
+$ yarn install
+```
+### Run frontend module
+```
+$ yarn start
+```
