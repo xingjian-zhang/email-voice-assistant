@@ -1,0 +1,10 @@
+<!-- {% block title %}Page Not Found{% endblock %} -->
+{% block body %}
+    <h1 name="text">Page Not Found</h1>
+    <label name="error">What you were looking for (<a href="{{ request.url }}">link</a>) is not available.</label>
+
+    <!-- <p>
+        What you were looking for is just not "{{error}}" there.
+    <p> -->
+    <a href="{{ url_for('login') }}">Try login</a>
+{% endblock %}
