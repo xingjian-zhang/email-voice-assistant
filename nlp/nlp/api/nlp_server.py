@@ -1,7 +1,12 @@
 import nlp
 from flask import request
 import requests
-
+import os
+import sys
+import speech_recognition as sr
+from gtts import gTTS
+from pydub import AudioSegment
+from pathlib import Path
 
 @nlp.app.route('/', methods=["GET"])
 def base():
@@ -12,11 +17,14 @@ def base():
 def parse_voice():
     path = request.args.get('path')
     # 1. speech 2 text
-    text = _speech_to_text(path)
+    text = _speech_to_text(str(Path(nlp.__file__).parent/ path))
+    
     # 2. parse command & email_id
     command = _parse_command(text)
-    email_id = -1
+    # print(command)
+    email_id = 0
     args = {}
+    
     # 3. send command to backend
     _send_command(command, email_id, args)
     return text
@@ -25,6 +33,7 @@ def parse_voice():
 
 
 def _send_command(command, email_id, args):
+    # pass
     email_dict = _get_email(email_id) # for other functionalities
     command_dict = {
         "id": email_id,
@@ -57,7 +66,7 @@ def _speech_to_text(path, verbose=False):
             print('Sorry.. run again...')
     return text
 
-def _parse_command(text, keywords):
+def _parse_command(text, keywords=Path(nlp.__file__).parent / "command_keywords.txt"):
     '''
     text:       the text to be parsed for commands
     keywords:   either a set of string, or a path to keywords_file
@@ -69,9 +78,9 @@ def _parse_command(text, keywords):
         keywords = keywords
     else:
         try:
-            keywords_file = open("keywords.txt", 'r+')
+            keywords_file = open(keywords, 'r+')
             keywords = set(line.rstrip() for line in keywords_file.readlines())
-        except FileNotFoundError
+        except FileNotFoundError:
             print("Keywords file not found")
 
     def preprocess(word : str) -> str:
@@ -83,7 +92,12 @@ def _parse_command(text, keywords):
         if word in keywords:
             query[word] = query.get(word, 0) + 1
 
-    return query
+    command = "default"
+    max_count = -1
+    for keyword, count in query.items():
+        if count > max_count:
+            command = keyword
+    return command
 
 def _text_to_audio(text : str, save_file : str, language="en", slow=False):
     audio_obj = gTTS(text=text, lang=language, slow=slow)
