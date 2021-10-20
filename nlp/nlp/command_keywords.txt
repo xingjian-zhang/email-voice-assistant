@@ -1,0 +1,7 @@
+read
+unread
+delete
+forward
+star
+unstar
+summarize
