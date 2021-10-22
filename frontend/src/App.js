@@ -40,10 +40,30 @@ function App() {
       .stop()
       .getMp3()
       .then(([buffer, blob]) => {
+        // Create URL
         const curBlobURL = URL.createObjectURL(blob)
         setBlobURL(curBlobURL);
         setIsRecording(false);
         console.log(typeof (blob))
+
+        // Save as file
+        var file = new File(buffer, 'test.mp3', {
+          type: blob.type,
+          lastModified: Date.now()
+        });
+
+        var formData = new FormData();
+        formData.append("voice", file, "test.mp3");
+        formData.append("string", "sss")
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState == XMLHttpRequest.DONE) {
+            console.log(xhr.responseText);
+          }
+        }
+        xhr.open('POST', '/voice/');
+        xhr.send(formData);
+
       }).catch((e) => console.log(e));
   })
 
