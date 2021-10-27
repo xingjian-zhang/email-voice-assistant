@@ -72,6 +72,7 @@ def _command(email_id, command, args={}):
     2. `reply`
     """
     m = get_message(email_id)
+    response = None
     if command == 'read':
         m.markAsRead()
     elif command == 'unread':
@@ -84,11 +85,12 @@ def _command(email_id, command, args={}):
         query = args["query"]
         results = ezgmail.search(query)
         # REVIEW - Only extract the first mail of threads
-        results = [_email_to_dict(mail[0]) for mail in results]
-        return results
+        response = [_email_to_dict(mail[0]) for mail in results]
+    elif command == 'show':
+        response =  _email_to_dict(email_id)
     else:
         raise NotImplementedError("Not support command `{}`".format(command))
-    return None
+    return response
 
 
 def get_message(email_id):
