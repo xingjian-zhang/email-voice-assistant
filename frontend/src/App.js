@@ -59,7 +59,7 @@ function App() {
         formData.append("string", "sss")
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
-          if (xhr.readyState == XMLHttpRequest.DONE) {
+          if (xhr.readyState === XMLHttpRequest.DONE) {
             console.log(xhr.responseText);
           }
         }
