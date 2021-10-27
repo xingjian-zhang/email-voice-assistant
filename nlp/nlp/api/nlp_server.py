@@ -10,14 +10,15 @@ from gtts import gTTS
 from pydub import AudioSegment
 from pathlib import Path
 
+
 @nlp.app.route('/', methods=["GET"])
 def base():
-    return "Welcome to the NLP server!" 
+    return "Welcome to the NLP server!"
 
 
 @nlp.app.route('/voice/', methods=["POST"])
 def parse_voice():
-    
+
     voice_file = request.files["voice"]
     voice_file.save("test.mp3")
     sound = AudioSegment.from_mp3("test.mp3")
@@ -30,7 +31,7 @@ def parse_voice():
     command = _parse_command(user_text)
     email_id = 0
     args = {}
-    
+
     # 3. send command to backend
     if command != "default":
         response = _send_command(command, email_id, args)
@@ -39,7 +40,7 @@ def parse_voice():
     bot_text = "Sorry, can you speak again?" if command == "default" else "OK."
     if command == "show":
         bot_text = _mail_dict_to_str(response)
-        bot_text += "\nWhat can I do for you?"
+        bot_text += "\n--------------------\nWhat can I do for you?"
 
     return flask.jsonify({
         "user": user_text,
@@ -63,14 +64,13 @@ def _mail_dict_to_str(mail_dict):
     _to_print.append("{:10s}: {}".format("From", mail_dict["from"]))
     _to_print.append("{:10s}: {}".format("To", ";".join(mail_dict["to"])))
     _to_print.append("{:10s}: {}".format("Time", mail_dict["time"]))
-    _to_print.append("{:10s}: {}".format("Body", mail_dict["body"]))
+    _to_print.append("{:10s}: \n{}".format("Body", mail_dict["body"]))
     return "\n".join(_to_print)
-
 
 
 def _send_command(command, email_id, args):
     # pass
-    email_dict = _get_email(email_id) # for other functionalities
+    email_dict = _get_email(email_id)  # for other functionalities
     command_dict = {
         "id": email_id,
         "command": command,
@@ -106,6 +106,7 @@ def _speech_to_text(path, verbose=False):
             print('Sorry.. run again...')
     return text
 
+
 def _parse_command(text, keywords=Path(nlp.__file__).parent / "command_keywords.txt"):
     '''
     text:       the text to be parsed for commands
@@ -123,9 +124,9 @@ def _parse_command(text, keywords=Path(nlp.__file__).parent / "command_keywords.
         except FileNotFoundError:
             print("Keywords file not found")
 
-    def preprocess(word : str) -> str:
-        return word.lower() # FIXME: 
-    
+    def preprocess(word: str) -> str:
+        return word.lower()  # FIXME:
+
     query = dict()
     for word in text.split(' '):
         word = preprocess(word)
@@ -139,7 +140,8 @@ def _parse_command(text, keywords=Path(nlp.__file__).parent / "command_keywords.
             command = keyword
     return command
 
-def _text_to_audio(text : str, save_file : str, language="en", slow=False):
+
+def _text_to_audio(text: str, save_file: str, language="en", slow=False):
     audio_obj = gTTS(text=text, lang=language, slow=slow)
     ext = os.path.splitext(save_file)[-1]
     if ext.lower() == ".mp3":
