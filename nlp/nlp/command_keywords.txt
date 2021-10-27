@@ -10,3 +10,4 @@ delete
 summarize
 forward
 reply
+show

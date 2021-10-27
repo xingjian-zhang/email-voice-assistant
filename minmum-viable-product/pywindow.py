@@ -36,7 +36,7 @@ class ChatApplication(threading.Thread):
     def _setup_main_window(self, chunk=3024, frmat=pyaudio.paInt16, channels=1, rate=44100, py=pyaudio.PyAudio()):
         self.window.title("Demo For Voice Email")
         self.window.resizable(width=False, height=False)
-        self.window.configure(width=600, height=800, bg=BG_COLOR)
+        self.window.configure(width=600, height=1100, bg=BG_COLOR)
 
 
         # self.backimg = tkinter.PhotoImage(file="img.png")
@@ -83,23 +83,17 @@ class ChatApplication(threading.Thread):
         self.backlabel.place(relwidth=1, rely=0.825)
         
         # message entry box
-        # self.msg_entry = Entry(bottom_label, bg="#2C3E50", fg=TEXT_COLOR, font=FONT)
-        # self.msg_entry.place(relwidth=0.74, relheight=0.06, rely=0.008, relx=0.011)
-        # self.msg_entry.focus()
-        # self.msg_entry.bind("<Return>", self._on_enter_pressed)
+
         
         # # send button
-        send_button = Button(self.backlabel, text="Record", font=FONT_BOLD, width=20, bg=BG_GRAY,
-                             command=lambda: self._on_enter_pressed(None))
+        send_button = Button(self.backlabel, text="Record", font=FONT_BOLD, width=20, bg=BG_GRAY)
         
         # send_button.place(relx=0.38, rely=0.8, relheight=0.06, relwidth=0.22)
         send_button.place(relx=0.38, rely=0.008, relheight=0.06, relwidth=0.22)
 
 
      
-    def _on_enter_pressed(self, event):
-        msg = self.msg_entry.get()
-        self._insert_message(msg, "You")
+
         
     def _insert_message(self, msg, sender):
         if not msg:
@@ -125,22 +119,47 @@ class ChatApplication(threading.Thread):
         with open('../log.txt') as fp:
             lines = fp.readlines()
             length = len(lines)
-            for i in range(self.currentline, length):
-                line = lines[i]
+            
+            if length > 0 and self.currentline < length:
+                print('self current line', self.currentline)
+                
+
+                line = lines[self.currentline]
                 msg = "🤖️" +":" + line + "\n\n"
 
                 if len(line)> 5 and line[0:5] == "User:":
                     str_ = emojize(":boy:")
-                    msg = "\t" +  line[5:len(line)-1] +":"+ str_ +"\n\n"       
-                self.text_widget.configure(state=NORMAL)
-                self.text_widget.insert(END, msg)
-                self.text_widget.configure(state=DISABLED)
-                self.currentline += 1
-                break
+                    msg = "\t" +  line[5:len(line)-1] +":"+ str_ +"\n\n"  
+                    self.text_widget.configure(state=NORMAL)
+                    self.text_widget.insert(END, msg)
+                    self.text_widget.configure(state=DISABLED)
+                    self.currentline += 1
+                elif len(line) > 4 and line[0:4] == "SHOW":
+                    print(line)
+                    msg = line[4:]
+                    self.text_widget.configure(state=NORMAL)
+                    self.text_widget.insert(END, msg)
+                    self.text_widget.configure(state=DISABLED)
+                    self.currentline += 1
+                    for i in range(self.currentline, length):
+                        msg = lines[i]
+                        if (self.currentline== length -1):
+                            msg = "🤖️" +":" + msg + "\n\n"
+                        self.text_widget.configure(state=NORMAL)
+                        self.text_widget.insert(END, msg)
+                        self.text_widget.configure(state=DISABLED)
+                        self.currentline+= 1
+                    
+                else:
+                    self.text_widget.configure(state=NORMAL)
+                    self.text_widget.insert(END, msg)
+                    self.text_widget.configure(state=DISABLED)
+                    self.currentline += 1
         
         self.window.after(1000,self.insertMsg)
         
 if __name__ == "__main__":
+    open('../log.txt','w')
     app = ChatApplication()
     app.insertMsg()
     app.run()

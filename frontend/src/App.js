@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import VoicEmail from './img/VoicEmail.png';
 import MicRecorder from 'mic-recorder-to-mp3';
+import FootImg from './img/foot.png';
 import { AudioOutlined, AudioMutedOutlined } from '@ant-design/icons'
 const Mp3Recorder = new MicRecorder({ bitRate: 128 });
 
@@ -57,7 +59,7 @@ function App() {
         formData.append("string", "sss")
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
-          if (xhr.readyState == XMLHttpRequest.DONE) {
+          if (xhr.readyState === XMLHttpRequest.DONE) {
             console.log(xhr.responseText);
           }
         }
@@ -71,7 +73,12 @@ function App() {
 
     < div className="App" >
       < div className="container" >
+        <div className="nav-bar">
+          <img style={{height:55,paddingRight:15}} src={VoicEmail} alt="voicemail"></img>
+          <div className="nav-text">LinguAI</div>
+        </div>
         <div className="header">VoicEmail Assistant</div>
+        <div className="intruction">Click on the mic to activate the intelligent VoicEmail assistant!</div>
         <div className="record-listen">
           {
             isRecording && (
@@ -84,6 +91,9 @@ function App() {
             )
           }
           <audio src={blobURL} controls="controls" />
+        </div>
+        <div className="foot">
+          <img style={{ height: 50 }} src={FootImg}></img>
         </div>
       </div >
     </div >
