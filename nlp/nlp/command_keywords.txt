@@ -1,7 +1,13 @@
 read
 unread
-delete
-forward
 star
 unstar
+important
+unimportant
+spam
+unspam
+delete
 summarize
+forward
+reply
+show
