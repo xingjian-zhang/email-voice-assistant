@@ -9,16 +9,16 @@ const App = () => {
     < div className="App" >
       < div className="container" >
         <div className="nav-bar">
-          <img style={{height:40,paddingRight:15}} src={VoicEmail} alt="voicemail"></img>
-          <div className="nav-text">LinguAI</div>
+          <img style={{height:50,paddingRight:15}} src={VoicEmail} alt="voicemail"></img>
+          LinguAI - VoicEmail Assistant
+          <div className="nav-text"></div>
         </div>
-        <div className="header">VoicEmail Assistant</div>
         <div className="chat-box-container">
           <ChatBox></ChatBox>
         </div>
-        <div className="foot">
+        {/* <div className="foot">
           <img style={{ height: 50 }} src={FootImg}></img>
-        </div>
+        </div> */}
       </div >
     </div >
   );

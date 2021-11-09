@@ -108,7 +108,7 @@ const ChatBox = () => {
             {
               !isRecording && (
                 <div className="mic-box" onClick={startSpeak} >
-                  < AudioMutedOutlined style={{ fontSize: 27 }}/><br/>
+                  < AudioOutlined style={{ fontSize: 27 }}/><br/>
                   Record
                 </div>
               )
