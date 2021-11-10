@@ -29,9 +29,18 @@ const ChatBox = () => {
         setIsBlocked(true);
       },
     );
-    setMsg([...msg, "Hi, I am your intelligent voice email assistant. What can I help you?"]);
+    var openMsg = "Hi, I am your intelligent voice email assistant. What can I help you?";
+    setMsg([...msg, openMsg]);
     setSpeaker([...speaker, 0]);
+    speak(openMsg);
   }, [])
+
+  function speak (message) {
+    var msg = new SpeechSynthesisUtterance(message)
+    var voices = window.speechSynthesis.getVoices()
+    msg.voice = voices[0]
+    window.speechSynthesis.speak(msg)
+  }
 
   const startSpeak = () => {
     setIsRecording(true);
@@ -59,6 +68,7 @@ const ChatBox = () => {
     }).then(res => {
         setMsg([...msgArr,res.data.bot]);
         setSpeaker([...speaker, 0]);
+        speak(res.data.bot);
       }
     ).then (err=>{
       console.log(err);

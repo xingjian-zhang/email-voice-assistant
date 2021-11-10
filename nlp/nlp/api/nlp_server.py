@@ -24,9 +24,9 @@ def base():
 def parse_voice():
     fp = open('log.txt', 'a')
     voice_file = request.files["voice"]
-    voice_file.save("test.mp3")
+    """voice_file.save("test.mp3")
     sound = AudioSegment.from_mp3("test.mp3")
-    sound.export("test.wav", format="wav")
+    sound.export("test.wav", format="wav")"""
     # 1. speech 2 text
     user_text = _speech_to_text(voice_file)
     # TODO: Ambiguity Regex Match!
