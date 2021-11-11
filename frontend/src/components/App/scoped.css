@@ -1,7 +1,7 @@
 .App {
   text-align: center;
   width: 100vw;
-  color: #00274C;
+  color: #00274c;
   background-color: white;
   overflow-x: hidden;
 }
@@ -21,7 +21,7 @@
   justify-content: center;
   width: 60%;
   height: 60px;
-  border-bottom: solid #00274C 2px;
+  border-bottom: solid #00274c 2px;
   font-size: 27px;
   font-weight: bold;
   line-height: 60px;
@@ -60,8 +60,7 @@
   display: flex;
   width: 100%;
   height: 50px;
-  background-color: #00274C;
+  background-color: #00274c;
   position: absolute;
   bottom: 0;
-  /* margin-top: 20px; */
 }

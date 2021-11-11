@@ -67,20 +67,21 @@ def parse_voice():
 
 @nlp.app.route('/response/', methods=["GET"])
 def get_response():
-    user_text = request.args.get('text')
-    fp.write("User: "+user_text+"\n")
-    command = _parse_command(user_text)
-    email_id = 0
-    args = {}
-    if command != "default":
-        response = _send_command(command, email_id, args)
-    bot_text = "Sorry, can you speak again?" if command == "default" else "OK."
-    if command == "show":
-        bot_text = _mail_dict_to_str(response)
-        bot_text += "\n--------------------\nWhat can I do for you?"
-        bot_text = "SHOW"+bot_text
+    # user_text = request.args.get('text')
+    # fp.write("User: "+user_text+"\n")
+    # command = _parse_command(user_text)
+    # email_id = 0
+    # args = {}
+    # if command != "default":
+    #     response = _send_command(command, email_id, args)
+    # bot_text = "Sorry, can you speak again?" if command == "default" else "OK."
+    # if command == "show":
+    #     bot_text = _mail_dict_to_str(response)
+    #     bot_text += "\n--------------------\nWhat can I do for you?"
+    #     bot_text = "SHOW"+bot_text
 
-    fp.write(bot_text+"\n")
+    # fp.write(bot_text+"\n")
+    bot_text = "OK. I will do that."
     return flask.jsonify({
         "bot": bot_text
     })
