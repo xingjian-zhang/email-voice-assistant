@@ -73,7 +73,7 @@ $ sudo apt install npm
 Then we set up `yarn` using `npm`
 ```
 $ cd frontend
-$ npm install --global yard
+$ npm install --global yarn
 ```
 
 #### Build the app
