@@ -18,6 +18,10 @@ const ChatBox = () => {
   const [msg, setMsg] = useState([]);
   const [speaker, setSpeaker] = useState([]); //0 for assistant, 1 for user
 
+  navigator.getUserMedia = ( navigator.getUserMedia ||
+                       navigator.webkitGetUserMedia ||
+                       navigator.mozGetUserMedia ||
+                       navigator.msGetUserMedia);
   useEffect (() => {
     navigator.getUserMedia({ audio: true },
       () => {
