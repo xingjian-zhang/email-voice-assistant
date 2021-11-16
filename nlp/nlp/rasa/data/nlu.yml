@@ -1,0 +1,23 @@
+nlu:
+- intent: greet
+  examples: |
+    - Hi
+    - Hey!
+    - Hello
+    - Good day
+    - Good morning
+
+- intent: subscribe
+  examples: |
+    - I want to star the email
+    - Can you help me star this email
+    - Can you star this email
+    - star this email
+    - star
+
+- intent: inform
+  examples: |
+    - The title is example
+    - random
+    - Please star anything
+    - something

@@ -1,0 +1,13 @@
+responses:
+  utter_greet:
+  - text: |
+      Hello! How can I help you?
+  - text: |
+      Hi!
+  utter_ask_email:
+  - text: |
+      What is your email title?
+  utter_subscribed:
+  - text: |
+      Already star the email: {email}!
+  - text: You're all set! Check {email} to confirm the operation.

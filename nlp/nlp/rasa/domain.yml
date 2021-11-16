@@ -1,0 +1,34 @@
+version: '2.0'
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true
+intents:
+- greet
+- inform
+- subscribe
+slots:
+  email:
+    type: unfeaturized
+    influence_conversation: false
+responses:
+  utter_greet:
+  - text: |
+      Hello! How can I help you?
+  - text: |
+      Hi!
+  utter_ask_email:
+  - text: |
+      What is your email title?
+  utter_subscribed:
+  - text: |
+      Already star the email: {email}!
+  - text: You're all set! Check the starred email with title {email} 
+actions:
+- '...'
+- utter_greet
+- utter_subscribed
+forms:
+  newsletter_form:
+    required_slots:
+      email:
+      - type: from_text
