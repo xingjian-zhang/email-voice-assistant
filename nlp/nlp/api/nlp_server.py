@@ -12,6 +12,7 @@ LOGGING = False
 if LOGGING:
     fp = open('log.txt', 'w')
 
+
 @nlp.app.route('/', methods=["GET"])
 def base():
     return "Welcome to the NLP server!"
@@ -24,7 +25,7 @@ def base():
 #     # voice_file.save("test.mp3")
 #     # sound = AudioSegment.from_mp3("test.mp3")
 #     # sound.export("test.wav", format="wav")
-    
+
 #     # 2. speech2text
 #     user_text = _speech_to_text(voice_file)
 #     # TODO: Ambiguity Regex Match!
@@ -57,7 +58,7 @@ def base():
 #         bot_text = _mail_dict_to_str(response)
 #         bot_text += "\n--------------------\nWhat can I do for you?"
 #         bot_text = "SHOW"+bot_text
-#     else: 
+#     else:
 #         bot_text = "OK."
 #     # # 6. text2speech
 #     # _text_to_audio(bot_text, "test_output.mp3")
@@ -76,7 +77,7 @@ def get_response():
     user_text = request.args.get('text')
     if LOGGING:
         fp.write("User: "+user_text+"\n")
-    
+
     command, email_id, args = _parse_command(user_text)
     # 3. parse command, email_id & args
     # text = "Receive your command: " + command
@@ -99,7 +100,7 @@ def get_response():
         bot_text = _mail_dict_to_str(response)
         bot_text += "\n--------------------\nWhat can I do for you?"
         bot_text = "SHOW"+bot_text
-    else: 
+    else:
         bot_text = "OK."
     # # 6. text2speech
     # _text_to_audio(bot_text, "test_output.mp3")
@@ -111,6 +112,7 @@ def get_response():
         "user": user_text,
         "bot": bot_text
     })
+
 
 def _mail_dict_to_str(mail_dict):
     """
@@ -201,18 +203,18 @@ def _parse_command(text, keywords=Path(nlp.__file__).parent / "command_keywords.
 
     if command == "*":
         command = "star"  # FIXME:
-    
+
     # 2. get email_id and other args
     email_id = 0
     args = {}
-    
+
     return command, email_id, args
 
 
 # def _text_to_audio(text: str, save_file, language="en", slow=False):
 #     OUTPUT_DIR = Path(nlp.__file__).parent / "output_audio"
 #     audio_obj = gTTS(text=text, lang=language, slow=slow)
-    
+
 #     ext = os.path.splitext(save_file)[-1]
 #     if ext.lower() == ".mp3":
 #         audio_obj.save(str(OUTPUT_DIR / save_file))
