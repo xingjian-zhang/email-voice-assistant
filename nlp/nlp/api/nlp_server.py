@@ -17,7 +17,6 @@ if LOGGING:
 def base():
     return "Welcome to the NLP server!"
 
-
 # @nlp.app.route('/voice/', methods=["POST"])
 # def parse_voice():
 #     # 1. save voice
