@@ -64,6 +64,8 @@ def _command(email_id, command, args={}):
     5. `search`
         - `query`: a string, see details @ https://support.google.com/mail/answer/7190?hl=en
     6. `show` - no args
+    7. `prev` - no args
+    8. `next` - no args
     TODO:
     1. `forward` to a list of users with/without new content
     2. `reply`
@@ -85,9 +87,38 @@ def _command(email_id, command, args={}):
         # Query (for now)
         if command == "search":
             query = args["query"]
-            m = ezgmail.getMessage(query)  # Return the first matched message
-            response = _email_to_dict(message=m)
+            m = ezgmail.getMessage(query)  # TODO - #38 return a list
         elif command == "show":
             m = ezgmail.get(email_id)
-            response = _email_to_dict(message=m)
+        elif command == "prev":
+            prev_email_id = _prev(email_id)
+            if prev_email_id is None:
+                raise IndexError("Already first message.")
+            m = ezgmail.get(prev_email_id)
+        elif command == "next":
+            next_email_id = _next(email_id)
+            if next_email_id is None:
+                raise IndexError("Already last message.")
+            m = ezgmail.get(next_email_id)
+        response = _email_to_dict(m)   
     return response
+
+
+def _prev(email_id):
+    """Return the previous message id."""
+    id_list = ezgmail.getIdList()
+    inv_dict = {v: i for i, v in enumerate(id_list)}
+    cur_id = inv_dict.get(email_id, None)
+    if cur_id is not None and cur_id > 0:
+        return id_list[cur_id - 1]
+    return None
+
+def _next(email_id):
+    """Return the next message id."""
+    id_list = ezgmail.getIdList()
+    inv_dict = {v: i for i, v in enumerate(id_list)}
+    cur_id = inv_dict.get(email_id, None)
+    if cur_id is not None and cur_id < len(id_list) - 1:
+        return id_list[cur_id + 1]
+    return None
+
