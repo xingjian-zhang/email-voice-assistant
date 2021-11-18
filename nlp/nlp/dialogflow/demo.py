@@ -8,8 +8,9 @@ LANGUAGE_CODE = "en-US"
 
 class Dialogflow_session:
     def __init__(self, session_id):
-        self.email_ids = [0] # list of id
-        self.email_dicts = [] # list of dicts
+        self.curr_email = 0
+        self.email_id = 0 # id from query
+        self.email_dict = {} # dict
         # self.init = False # todo
         self.project_id = PROJECT_ID
         self.session_id = session_id
@@ -30,9 +31,9 @@ class Dialogflow_session:
     def parse_command_dialogflow(self, text):
         # print("get user text")
         action, parameters, fulfill_text = self._detect_intent_texts(text)
-        args = self._parse(action, parameters)
+        args, email_ids = self._parse(action, parameters)
 
-        return action, self.email_ids, args, fulfill_text
+        return action, email_ids, args, fulfill_text
 
 
     def _detect_intent_texts(self, text):
@@ -59,6 +60,8 @@ class Dialogflow_session:
         modify: self.email_id, self.email_dict
         return: args for sending command
         """
+        email_ids = [self.curr_email]
+
         if action.split('.')[0] == "command":  # means this is an operation to the email, e.g. forward, delete, mark as read
             mode = action.split('.')[2]
             if mode == "this": # manipulate on current email
@@ -68,10 +71,11 @@ class Dialogflow_session:
                 date_split = date.split('-')
                 date = datetime.date(int(date_split[0]), int(date_split[1]), int(date_split[2]))
                 next_day = date + datetime.timedelta(days=1)
-                # query = f"after:{date.isoformat()} before:{next_day.isoformat()}" # query exactly this day
-                query = f"from:jimmyzxj@umich.edu" # query exactly this day
-                self._query_backend_and_get_email(query)
-            elif mode == "confirm":
+                query = f"after:{date.isoformat().replace('-','/')} before:{next_day.isoformat().replace('-','/')}" # query exactly this day
+                # query = f"from:jimmyzxj@umich.edu" # query exactly this day
+                self._query_backend_and_get_email(query) # modify self.email_id
+                email_ids = [self.email_id]
+            elif mode == "no_action":
                 pass
             else:
                 raise Exception(f"mode [{mode}] is not implemented")
@@ -79,8 +83,8 @@ class Dialogflow_session:
         elif action.split('.')[0] == "dialog": # means this is only a normal dialog, no action needed
             pass # todo
 
-        args = {} # todo
-        return args
+        args = {} # todo: args sent to backend
+        return args, email_ids
 
 
     def _query_backend_and_get_email(self, query):
@@ -91,8 +95,10 @@ class Dialogflow_session:
         print(response)
 
         # get email id and email content
-        self.email_ids = [email_dict["id"] for email_dict in response]
-        self.email_dicts = response
+
+        # self.email_ids = [email_dict["id"] for email_dict in response]
+        self.email_id = response["id"] # single email
+        self.email_dict = response
 
 
 def _send_command(command, email_id, args):
@@ -105,7 +111,7 @@ def _send_command(command, email_id, args):
         f"http://localhost:{3000}/api/command/", json=command_dict)
     # print(response)
     data = response.json()
-    # print(data)
+    print(data)
     return data["response"]
 
 
@@ -129,7 +135,7 @@ while True:
     print("bot text: ", fulfill_text)
     print('-'*20)
 
-    if action.split('.')[1] == "mark_as_read":
+    if action.split('.')[1] == "mark_as_read" and action.split('.')[2] != "no_action":
         command = "read"
         for email_id in email_ids:
             _send_command(command, email_id, args)
