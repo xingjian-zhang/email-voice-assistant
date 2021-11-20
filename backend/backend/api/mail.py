@@ -30,7 +30,7 @@ def command():
     try:
         response = _command(
             req_dict["id"], req_dict["command"], req_dict["args"])
-    except NotImplementedError as e:
+    except Exception as e:
         return flask.jsonify({
             'success': False,
             'error': str(e)
@@ -41,13 +41,9 @@ def command():
     })
 
 
-def _email_to_dict(email_id):
-    try:
-        message = get_message(email_id)
-    except IndexError:
-        return None
+def _email_to_dict(message):
     message_dict = {
-        "id": email_id,
+        "id": message.id,
         "from": message.sender,
         "to": message.recipient.split(","),
         "subject": message.subject,
@@ -67,37 +63,62 @@ def _command(email_id, command, args={}):
     4. `delete` - no args
     5. `search`
         - `query`: a string, see details @ https://support.google.com/mail/answer/7190?hl=en
+    6. `show` - no args
+    7. `prev` - no args
+    8. `next` - no args
     TODO:
     1. `forward` to a list of users with/without new content
     2. `reply`
     """
-    m = get_message(email_id)
     response = None
-    if command == 'read':
-        m.markAsRead()
-    elif command == 'unread':
-        m.markAsUnread()
-    elif command == 'spam':
-        m.markAsSpam()
-    elif command == 'delete':
-        m.trash()
-    elif command == 'search':
-        query = args["query"]
-        results = ezgmail.search(query)
-        # REVIEW - Only extract the first mail of threads
-        response = [_email_to_dict(mail[0]) for mail in results]
-    elif command == 'show':
-        response =  _email_to_dict(email_id)
+    labeling = ["read", "unread", "spam", "delete"]
+    if command in labeling:
+        # Simple labeling & No response
+        m = ezgmail.get(email_id)  # Absolute index from previous query
+        if command == 'read':
+            m.markAsRead()
+        elif command == 'unread':
+            m.markAsUnread()
+        elif command == 'spam':
+            m.markAsSpam()
+        elif command == 'delete':
+            m.trash() 
     else:
-        raise NotImplementedError("Not support command `{}`".format(command))
+        # Query (for now)
+        if command == "search":
+            query = args["query"]
+            m = ezgmail.getMessage(query)  # TODO - #38 return a list
+        elif command == "show":
+            m = ezgmail.get(email_id)
+        elif command == "prev":
+            prev_email_id = _prev(email_id)
+            if prev_email_id is None:
+                raise IndexError("Already first message.")
+            m = ezgmail.get(prev_email_id)
+        elif command == "next":
+            next_email_id = _next(email_id)
+            if next_email_id is None:
+                raise IndexError("Already last message.")
+            m = ezgmail.get(next_email_id)
+        response = _email_to_dict(m)   
     return response
 
 
-def get_message(email_id):
-    """TODO - Need absolute index of all INBOX messages."""
-    try:
-        recent_mails = ezgmail.recent(maxResults=9999)
-        message: ezgmail.GmailMessage = recent_mails[email_id].messages[0]
-    except IndentationError:
-        return None
-    return message
+def _prev(email_id):
+    """Return the previous message id."""
+    id_list = ezgmail.getIdList()
+    inv_dict = {v: i for i, v in enumerate(id_list)}
+    cur_id = inv_dict.get(email_id, None)
+    if cur_id is not None and cur_id > 0:
+        return id_list[cur_id - 1]
+    return None
+
+def _next(email_id):
+    """Return the next message id."""
+    id_list = ezgmail.getIdList()
+    inv_dict = {v: i for i, v in enumerate(id_list)}
+    cur_id = inv_dict.get(email_id, None)
+    if cur_id is not None and cur_id < len(id_list) - 1:
+        return id_list[cur_id + 1]
+    return None
+
