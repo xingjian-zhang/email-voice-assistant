@@ -88,7 +88,7 @@ def _command(email_id, command, args={}):
         # Query (for now)
         if command == "search":
             query = args["query"]
-            m = ezgmail.searchMessages(query)  # TODO - #38 return a list
+            m = ezgmail.searchMessages(query)
         elif command == "show":
             m = ezgmail.get(email_id)
         elif command == "prev":
