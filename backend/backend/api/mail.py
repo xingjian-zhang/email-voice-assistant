@@ -57,15 +57,16 @@ def _command(email_id, command, args={}):
     """Parse and execute the command.
 
     List of current avaliable commands:
-    1. `read` - no args
-    2. `unread` - no args
-    3. `spam` - no args
-    4. `delete` - no args
+    1. `read`
+    2. `unread`
+    3. `spam`
+    4. `delete`
     5. `search`
         - `query`: a string, see details @ https://support.google.com/mail/answer/7190?hl=en
-    6. `show` - no args
-    7. `prev` - no args
-    8. `next` - no args
+    6. `show`
+    7. `prev`
+    8. `next`
+    9. `latest`
     TODO:
     1. `forward` to a list of users with/without new content
     2. `reply`
@@ -100,6 +101,13 @@ def _command(email_id, command, args={}):
             if next_email_id is None:
                 raise IndexError("Already last message.")
             m = ezgmail.get(next_email_id)
+        elif command == "latest":
+            id_list = ezgmail.getIdList()
+            if id_list:
+                lastest_email_id = id_list[0]
+            else:
+                raise IndexError("No message at all.")
+            m = ezgmail.get(lastest_email_id)
         response = _email_to_dict(m)   
     return response
 

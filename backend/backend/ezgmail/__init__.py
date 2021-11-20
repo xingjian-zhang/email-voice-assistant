@@ -908,7 +908,7 @@ def get(email_id):
     try:
         m = GmailMessage(SERVICE_GMAIL.users().messages().get(userId="me", id=email_id).execute())
     except Exception:
-        raise IndexError("Please use absolute index in the raw message.")
+        raise IndexError("Given index is invalid. Please use absolute index in the raw message.")
     return m
 
 
