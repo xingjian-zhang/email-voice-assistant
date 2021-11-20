@@ -88,7 +88,7 @@ def _command(email_id, command, args={}):
         # Query (for now)
         if command == "search":
             query = args["query"]
-            m = ezgmail.getMessage(query)  # TODO - #38 return a list
+            m = ezgmail.searchMessages(query)  # TODO - #38 return a list
         elif command == "show":
             m = ezgmail.get(email_id)
         elif command == "prev":
@@ -108,7 +108,11 @@ def _command(email_id, command, args={}):
             else:
                 raise IndexError("No message at all.")
             m = ezgmail.get(lastest_email_id)
-        response = _email_to_dict(m)   
+        if isinstance(m, list):
+            email_list = m
+        else:
+            email_list = [m]
+        response = [_email_to_dict(email) for email in email_list]
     return response
 
 
