@@ -9,6 +9,7 @@ import axios from 'axios';
 const ChatBox = () => {
   const {
     transcript,
+    finalTranscript,
     resetTranscript,
   } = useSpeechRecognition();
   const chatRef = useRef(null);
@@ -58,7 +59,15 @@ const ChatBox = () => {
   const stopSpeak = async () => {
     setIsRecording(false);
     SpeechRecognition.stopListening();
-    var trans = String(transcript);
+    var trans = "";
+    var trans_cur = String(transcript);
+    var trans_final = String(finalTranscript);
+    if (trans_final) {  // if the final transcript is ready, use the final one
+      trans = trans_final;
+    } else {
+      trans = trans_cur;
+    }
+    console.log(finalTranscript)
     trans = trans.replace("start","star");
     trans = trans.replace("rat","read");
     var msgArr = [...msg.slice(0,-1), trans];
