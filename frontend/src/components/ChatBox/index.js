@@ -48,6 +48,22 @@ const ChatBox = () => {
     window.speechSynthesis.speak(msg);
   }
 
+  function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
+  function punctuate(string){
+    // Punctuate according to rule
+    const question = ["what", "who", "how", "when", "which", "whom", "whose", "why", "may", "can", "could"];
+    var first_word = string.split(" ")[0];
+    if (question.includes(first_word.toLowerCase())) {
+      string += "?";
+    } else {
+      string += ".";
+    }
+    return string
+  }
+
   const startSpeak = () => {
     setIsRecording(true);
     resetTranscript();
@@ -67,7 +83,9 @@ const ChatBox = () => {
     } else {
       trans = trans_cur;
     }
-    console.log(finalTranscript)
+    console.log(trans);
+    trans = punctuate(trans);
+    trans = capitalizeFirstLetter(trans);
     trans = trans.replace("start","star");
     trans = trans.replace("rat","read");
     var msgArr = [...msg.slice(0,-1), trans];
