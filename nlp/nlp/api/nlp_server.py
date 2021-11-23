@@ -20,6 +20,12 @@ LANGUAGE_CODE = "en-US"
 
 OPERATIONS = ["read","unread","delete","spam"]
 
+@nlp.app.before_first_request
+def init_diagflow():
+    if not flask.session.get("diagflow"):
+        df_session = nlp.api.Dialogflow_session(session_id=5678)
+        flask.session["diagflow"] = df_session
+
 @nlp.app.route('/', methods=["GET"])
 def base():
     return "Welcome to the NLP server!"
