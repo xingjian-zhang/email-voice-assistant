@@ -18,64 +18,98 @@ import string
 
 class Summarize():
 
-    def __init__(self, key='061c9c38-576a-458b-b0dd-5b94e6bbcfca'):
-        self.key = key
+    def __init__(self, api_key='061c9c38-576a-458b-b0dd-5b94e6bbcfca'):
+        self.api_key = api_key
         self.stop_words = ENGLISH_STOP_WORDS.union(set(string.punctuation))
 
-    def tokenize(self, text):
+    def _tokenize(self, text):
         '''returns tokenized text'''
-        tokens = word_tokenize(text)
+        tokens = word_tokenize(text.lower())
         tagged = pos_tag(tokens)
-        stems = []
-        for item in tagged:
-            word, tag = item
+        words = []
+        for (word, tag) in tagged:
             if word in self.stop_words:
                 continue
             if word.startswith('\''):
                 continue
             if tag.startswith('N'):
-                #continue
-                stems.append(word)
-            # stems.append(PorterStemmer().stem(item))
-        return stems
+                words.append(word)
+        return words
 
-    def summarize(self, text, verbose=False):
-        '''
-        text:       either 'file', 'url' or 'raw', corresponding to a file handle, a url to text, or the raw text respectively
-        returns:    a string containing the summary
-        '''
-        response = requests.post(
-            "https://api.deepai.org/api/summarization",
-            data={
-                'text': text,
-            },
-            headers={'api-key': self.key}
-        )
-        summary = response.json()['output']
-        if verbose:
-            print(summary)
-        return summary
-    
-    def keywords(self, text, k=30):
+    def _get_keywords(self, text, k=5, meta=None):
         '''extract top k keywords from email content'''
-        vectorizer = TfidfVectorizer(tokenizer=self.tokenize, lowercase=True, )#stop_words=set(ENGLISH_STOP_WORDS)
+        vectorizer = TfidfVectorizer(tokenizer=self._tokenize, lowercase=True, )#stop_words=set(ENGLISH_STOP_WORDS)
         X = vectorizer.fit_transform([text]).toarray().squeeze()
         words = np.array(vectorizer.get_feature_names())
-        order = np.argsort(X)[::-1]
-        topk_words = words[order[:k]]
+        topk_words = words[(np.argsort(X)[::-1])[:k]]
         topk_words.sort()
-        filtered = [topk_words[0]]
+        filtered_words = [topk_words[0]]
         for i in range(1, len(topk_words)):
             if str(PorterStemmer().stem(topk_words[i])) == str(PorterStemmer().stem(topk_words[i-1])):
                 continue
-            filtered.append(topk_words[i])
-        return filtered
+            filtered_words.append(topk_words[i])
+        filtered_words = set(filtered_words)
+
+        if meta is not None:
+            title_tokens = set(self._tokenize(meta['title'])) if 'title' in meta else set()
+            author_tokens = set(self._tokenize(meta['author'])) if 'author' in meta else set()
+
+        return (
+            list(filtered_words & title_tokens - author_tokens),
+            list((filtered_words | title_tokens) - author_tokens - (filtered_words & title_tokens))
+        )
+        
+    def summarize(self, text: str, mode='tfidf', k=5, meta=None) -> str:
+        '''
+        text:       text string containing the fattened email
+        mode:       whether to use 'tfidf' or to use 'api' directly, api is not recommended
+        k:          #keywords to extract, used only if mode is 'tfidf'
+        meta:       meta information of the email in dict format
+        returns:    a string containing the summary
+        '''
+        if mode == 'tfidf':
+            if meta is not None and 'author' in meta:
+                ret_str = str(meta['author']) + " emails you "
+            else:
+                ret_str = "The email is "
+            # matched keywords appear in both the title and contents
+            matched, others = self._get_keywords(text, k, meta)
+            if len(matched) > 0:
+                ret_str += "mainly about "
+                if len(matched) > 1:
+                    for word in matched[:-1]:
+                        ret_str += word + ", "
+                    ret_str += "and " + matched[-1] + '. '
+                if len(others) > 1:
+                    ret_str += "It also talks about "
+                    for word in others[:-1]:
+                        ret_str += word + ", "
+                    ret_str += "and " + others[-1] + '.'
+            else:
+                ret_str += " about "
+                for word in others[:-1]:
+                    ret_str += word + ", "
+                ret_str += "and " + others[-1] + '.'
+            return ret_str
+            
+        elif mode == 'api':
+            raise DeprecationWarning # "The api version of summary is not recommended"
+            response = requests.post(
+                "https://api.deepai.org/api/summarization",
+                data={'text': text,},
+                headers={'api-key': self.api_key})
+            summary = response.json()['output']
+            return "Here is a quick summary of the email. " + summary
+        
+        else:
+            raise NotImplementedError
 
 if __name__ == '__main__':
+    '''
+    The main function here provides a simple demo
+    '''
     summarizer = Summarize()
-    emails = [
-        """The University of Michigan-Ann Arbor is proud to host the 2021 Veterans Week celebration, running Nov. 8-12, 2021. This annual event features a week of programming that educates and celebrates the experiences and sacrifice of those who have served our country. All events are free and are open to the entire university community and to the general public unless otherwise noted. We encourage you to attend as many of these events as you can. Out of an abundance of caution for the health of our community and our veterans, we will be offering all events as either hybrid virtual/in-person formats or entirely virtual formats. Please join us for respectful, educational, and inspirational panels, lectures, and stories via the links below each program. You can also visit the Veterans Week webpage for updates and more information."""
-        ]
+    # email text to be summarized
     text = """Peter, application deadlines are rapidly approaching! If you're ready to apply, head to gradapply.rice.edu. Deadlines vary by program, so be sure to verify the deadlines that pertain to your application.
         Have lingering questions about grad school life or the application process? Join us Thursday, Nov. 18, to chat with our Graduate Student Ambassadors at one of our Coffee Chats - sign up for the time that works for you here!
         To help you decide your plan of action, we've listed some commonly asked questions below, and more are on our website. Not seeing your question? Let us know! Refer to your program of interest for additional application requirements.
@@ -93,10 +127,16 @@ if __name__ == '__main__':
         Please note that it is possible that the email generated by our application system was filtered as spam. You can log back into the application and resend your letter of recommendation.
         Can I edit my application after I submit it?
         Some programs will permit important minor edits to your application; please contact them directly with requests."""
-    
-    #summarizer.summarize(text, verbose=True)
-    keywords = summarizer.keywords(text, k=10)
-    print(keywords)
+    # optional email meta information
+    meta = {
+        'author':   'Rice University Graduate and Postdoctoral Studies',
+        'datatime': 'Nov 16, 2021, 3:22 PM',
+        'title':    'Rice University application deadlines are approaching!'
+    }
+    # get the summary by calling the summary function
+    summary = summarizer.summarize(text, meta=meta, k=10)
+    print(summary)
+
 
 ''' documentation
 
