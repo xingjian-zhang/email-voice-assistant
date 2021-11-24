@@ -18,7 +18,7 @@ import string
 
 class Summarize():
 
-    def __init__(self, api_key):
+    def __init__(self, api_key=None):
         '''api_key should be acquired from https://deepai.org/machine-learning-model/summarization'''
         self.api_key = api_key
         self.stop_words = ENGLISH_STOP_WORDS.union(set(string.punctuation))
@@ -96,7 +96,7 @@ class Summarize():
             return ret_str
             
         elif mode == 'api':
-            raise DeprecationWarning # "The api version of summary is not recommended"
+            raise DeprecationWarning # The api version of summary is not recommended, comment this line and provide API key to use
             response = requests.post(
                 "https://api.deepai.org/api/summarization",
                 data={'text': text,},
@@ -137,69 +137,5 @@ if __name__ == '__main__':
         'title':    'Rice University application deadlines are approaching!'
     }
     # get the summary by calling the summary function
-    summary = summarizer.summarize(text, meta=meta, k=10)
+    summary = summarizer.summarize(text, meta=meta, k=5)
     print(summary)
-
-
-''' documentation
-
-# Example posting a text URL:
-
-import requests
-r = requests.post(
-    "https://api.deepai.org/api/summarization",
-    data={
-        'text': 'YOUR_TEXT_URL',
-    },
-    headers={'api-key': 'quickstart-QUdJIGlzIGNvbWluZy4uLi4K'}
-)
-print(r.json())
-
-
-# Example posting a local text file:
-
-import requests
-r = requests.post(
-    "https://api.deepai.org/api/summarization",
-    files={
-        'text': open('/path/to/your/file.txt', 'rb'),
-    },
-    headers={'api-key': 'quickstart-QUdJIGlzIGNvbWluZy4uLi4K'}
-)
-print(r.json())
-
-
-# Example directly sending a text string:
-
-import requests
-r = requests.post(
-    "https://api.deepai.org/api/summarization",
-    data={
-        'text': 'YOUR_TEXT_HERE',
-    },
-    headers={'api-key': 'quickstart-QUdJIGlzIGNvbWluZy4uLi4K'}
-)
-print(r.json())
-
-
-###############################################################################
-
-import base64
-
-# Let's use deepAI developed API
-# https://docs.deepaffects.com/docs/text-summary-api.html
-
-url = "https://proxy.api.deepaffects.com/text/generic/api/v1/async/summary"
-
-querystring = {"apikey":"<API_KEY>", "webhook":"<WEBHOOK_URL>"}
-
-payload = {"summaryType": "abstractive", "model": "iamus", "summaryData": [{"speakerId":"spk", "text":"text blob for speaker"}]}
-
-headers = {
-    'Content-Type': "application/json",
-}
-
-response = requests.post(url, json=payload, headers=headers, params=querystring)
-
-
-'''
