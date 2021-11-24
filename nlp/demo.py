@@ -1,10 +1,12 @@
 from google.cloud import dialogflow
 import requests
 import datetime
-# import nlp
+import nlp
 from nlp.api.nlp_server import Dialogflow_session, _send_command
+from nlp.api.summarize import Summarize
 
 OPERATIONS = ["read","unread","delete","spam"]
+summarizer = Summarize()
 
 df_session = Dialogflow_session(session_id=5678)
 while True:
@@ -23,12 +25,18 @@ while True:
         if command in OPERATIONS:  # send command to backend only when command is in OPERATIONS (operations on an email)
             for email_id in email_ids:
                 _send_command(command, email_id, args)
-        elif command == "speak":  # read the email out for the user
+        elif command == "speak_summary":  # read the email out for the user
+            sender = df_session.curr_email_dict["from"]
+            email_body = df_session.curr_email_dict["body"]
+            summary = summarizer.summarize(email_body)
+            extra_bot_text = f" The email is from {sender}. The summary is as follows: {summary}"
+            extra_bot_text += " Do you want to know more about this email?"
+            bot_text += extra_bot_text
+        elif command == "speak_whole":  # read the email out for the user
             sender = df_session.curr_email_dict["from"]
             email_body = df_session.curr_email_dict["body"]
             extra_bot_text = f" The email is from {sender}. The body is as follows: {email_body}"
             bot_text += extra_bot_text
-            # todo: do we need to mark it as read?
 
     print("action: ", action)
     print("email ids: ", email_ids)
