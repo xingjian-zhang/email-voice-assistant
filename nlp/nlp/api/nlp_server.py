@@ -26,10 +26,12 @@ summarizer = Summarize()
 
 @nlp.app.before_first_request
 def init_dialogflow():
-    if not session.get("df_id"):
-        session_id = 1234
-        session["df_id"] = session_id # store the df session_id in flask session object
-        nlp.df_sessions[session_id] = Dialogflow_session(session_id=session_id)
+    # if not session.get("df_id"):
+    session_id = 1234
+    session["df_id"] = session_id # store the df session_id in flask session object
+    nlp.df_sessions[session_id] = Dialogflow_session(session_id=session_id)
+    with open('log_2.txt', 'w') as f:
+        f.write("Diagflow Initialized")
 
 
 @nlp.app.route('/', methods=["GET"])
@@ -123,7 +125,7 @@ def get_response():
     #     bot_text = "OK."
     # # # 6. text2speech
     # # _text_to_audio(bot_text, "test_output.mp3")
-    session_id = session["df_id"]
+    session_id = 1234
     df_session = nlp.df_sessions[session_id]
     action, email_ids, args, bot_text = df_session.parse_command_dialogflow(user_text)
     action_type = action.split('.')[0]
@@ -288,7 +290,7 @@ class Dialogflow_session:
 
     def _build_session(self):
         self.session_client = dialogflow.SessionsClient.from_service_account_json(
-            'nlp/private_key/test-conv-ai-1011-3b1d693b53da.json')  # todo: need a more reasonable way to hardcode the file path
+            str(Path("nlp") / "nlp" / "dialogflow" / "private_key"/ "test-conv-ai-1011-3b1d693b53da.json"))  # todo: need a more reasonable way to hardcode the file path
 
         self.session = self.session_client.session_path(self.project_id, self.session_id)
         print("Session path: {}\n".format(self.session))
