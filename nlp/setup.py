@@ -21,7 +21,10 @@ setup(
         'pytest',
         'requests',
         'google-cloud-dialogflow',
-        'google-cloud-speech'
+        'google-cloud-speech',
+        'numpy',
+        'scikit-learn',
+        'nltk'
     ],
     python_requires='>=3.6',
 )
