@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './scoped.css';
-import RobIcon from '../../img/RobIcon.png';
-import UserIcon from '../../img/UserIcon.png';
+// import RobIcon from '../../img/RobIcon.png';
+// import UserIcon from '../../img/UserIcon.png';
+import BoyIcon from '../../img/Boy.jpeg';
+import GirlIcon from '../../img/Girl.jpeg';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import { AudioOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -120,7 +122,7 @@ const ChatBox = () => {
           msg.map((m,i) => (
               !speaker[i] ? (
                 <div className="assistant-box">
-                  <img  className="assistant-avatar" src={RobIcon} />
+                  <img  className="assistant-avatar" src={BoyIcon} />
                   <div className="assistant-msg">
                     {m}
                   </div>
@@ -128,7 +130,7 @@ const ChatBox = () => {
               ) : (
                 speaker[i] && (
                 <div className="user-box">
-                  <img  className="user-avatar" src={UserIcon} />
+                  <img  className="user-avatar" src={GirlIcon} />
                   <div className="user-msg">
                     {m}
                   </div>
@@ -143,17 +145,15 @@ const ChatBox = () => {
       <div className="record-listen">
             {
               isRecording && (
-                <div className="mic-box" onClick={stopSpeak} >
+                <div className="mic-box" onClick={stopSpeak} style={{"background-color": "#00274C", color: "white"}} >
                   <AudioOutlined style={{ fontSize: 27 }}/><br/>
-                  Stop
                 </div>
               )
             }
             {
               !isRecording && (
                 <div className="mic-box" onClick={startSpeak} >
-                  < AudioOutlined style={{ fontSize: 27 }}/><br/>
-                  Record
+                  < AudioOutlined style={{ fontSize: 27}}/><br/>
                 </div>
               )
             }
