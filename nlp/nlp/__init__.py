@@ -10,3 +10,4 @@ app.config.from_object('nlp.config')
 app.config["SECRET_KEY"] = "voicemail"
 
 import nlp.api
+df_sessions = {} # a global dict containing all df sessions, can access each df session by session_id

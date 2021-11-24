@@ -1,7 +1,7 @@
 import json
 import flask
 import nlp
-from flask import request
+from flask import request, session
 import requests
 import os
 import sys
@@ -9,6 +9,8 @@ from pathlib import Path
 from tkinter import *
 from google.cloud import dialogflow
 import datetime
+import random
+from .summarize import Summarize
 
 LOGGING = False
 if LOGGING:
@@ -19,6 +21,16 @@ PROJECT_ID = "test-conv-ai-1011"
 LANGUAGE_CODE = "en-US"
 
 OPERATIONS = ["read","unread","delete","spam"]
+
+summarizer = Summarize()
+
+@nlp.app.before_first_request
+def init_dialogflow():
+    if not session.get("df_id"):
+        session_id = random.randint(0, 10000) # random session id for each user
+        session["df_id"] = session_id # store the df session_id in flask session object
+        nlp.df_sessions[session_id] = Dialogflow_session(session_id=session_id)
+
 
 @nlp.app.route('/', methods=["GET"])
 def base():
@@ -111,7 +123,8 @@ def get_response():
     #     bot_text = "OK."
     # # # 6. text2speech
     # # _text_to_audio(bot_text, "test_output.mp3")
-    df_session = flask.session["dialogflow"]
+    session_id = session["df_id"]
+    df_session = nlp.df_sessions[session_id]
     action, email_ids, args, bot_text = df_session.parse_command_dialogflow(user_text)
     action_type = action.split('.')[0]
     command = action.split('.')[1]  # e.g. read, unread, spam...
@@ -126,7 +139,6 @@ def get_response():
             email_body = df_session.curr_email_dict["body"]
             extra_bot_text = f" The email is from {sender}. The body is as follows: {email_body}"
             bot_text += extra_bot_text
-            # todo: do we need to mark it as read?
 
     if LOGGING:
         fp.write(bot_text+"\n")
@@ -269,7 +281,7 @@ class Dialogflow_session:
 
     def _build_session(self):
         self.session_client = dialogflow.SessionsClient.from_service_account_json(
-            './nlp/private_key/test-conv-ai-1011-3b1d693b53da.json')  # todo: need a more reasonable way to hardcode the file path
+            'nlp/private_key/test-conv-ai-1011-3b1d693b53da.json')  # todo: need a more reasonable way to hardcode the file path
 
         self.session = self.session_client.session_path(self.project_id, self.session_id)
         print("Session path: {}\n".format(self.session))
