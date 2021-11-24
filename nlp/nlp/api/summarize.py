@@ -18,7 +18,8 @@ import string
 
 class Summarize():
 
-    def __init__(self, api_key='061c9c38-576a-458b-b0dd-5b94e6bbcfca'):
+    def __init__(self, api_key):
+        '''api_key should be acquired from https://deepai.org/machine-learning-model/summarization'''
         self.api_key = api_key
         self.stop_words = ENGLISH_STOP_WORDS.union(set(string.punctuation))
 
@@ -53,11 +54,13 @@ class Summarize():
         if meta is not None:
             title_tokens = set(self._tokenize(meta['title'])) if 'title' in meta else set()
             author_tokens = set(self._tokenize(meta['author'])) if 'author' in meta else set()
+            return (
+                list(filtered_words & title_tokens - author_tokens),
+                list((filtered_words | title_tokens) - author_tokens - (filtered_words & title_tokens))
+            )
 
-        return (
-            list(filtered_words & title_tokens - author_tokens),
-            list((filtered_words | title_tokens) - author_tokens - (filtered_words & title_tokens))
-        )
+        else:
+            return ([], list(filtered_words))
         
     def summarize(self, text: str, mode='tfidf', k=5, meta=None) -> str:
         '''
@@ -86,7 +89,7 @@ class Summarize():
                         ret_str += word + ", "
                     ret_str += "and " + others[-1] + '.'
             else:
-                ret_str += " about "
+                ret_str += "about "
                 for word in others[:-1]:
                     ret_str += word + ", "
                 ret_str += "and " + others[-1] + '.'
