@@ -27,7 +27,7 @@ summarizer = Summarize()
 @nlp.app.before_first_request
 def init_dialogflow():
     if not session.get("df_id"):
-        session_id = random.randint(0, 10000) # random session id for each user
+        session_id = 1234
         session["df_id"] = session_id # store the df session_id in flask session object
         nlp.df_sessions[session_id] = Dialogflow_session(session_id=session_id)
 
