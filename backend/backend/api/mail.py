@@ -83,7 +83,9 @@ def _command(email_id, command, args={}):
         elif command == 'spam':
             m.markAsSpam()
         elif command == 'delete':
-            m.trash() 
+            m.trash()
+        elif command == 'forward':
+            m.forward
     else:
         # Query (for now)
         if command == "search":
