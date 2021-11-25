@@ -63,7 +63,18 @@ const ChatBox = () => {
     } else {
       string += ".";
     }
-    return string
+    return string;
+  }
+
+  function generateResponse(bot) {
+    // object with keys {body, bot_text_end, bot_text_start, sender, summary}).
+    return (
+      <div>
+        {bot.bot_text_start} This email is from {bot.sender}. {bot.summary}
+        {bot.body && <div className="mail-message">{bot.body}</div>}
+        {bot.bot_text_end}
+      </div>
+    );
   }
 
   const startSpeak = () => {
