@@ -1,4 +1,10 @@
-User: please show me the email
+User: dogs in USA
+Sorry, can you speak again?
+User: 
+Sorry, can you speak again?
+User: please mark As read
+OK.
+User: show me the email
 SHOWSubject   : Test Email from ZXJ
 From      : Xingjian Zhang <jimmyzxj@umich.edu>
 To        : voicemail.linguai@gmail.com
@@ -10,3 +16,17 @@ TESTING
 
 --------------------
 What can I do for you?
+User: please show me a female
+SHOWSubject   : Test Email from ZXJ
+From      : Xingjian Zhang <jimmyzxj@umich.edu>
+To        : voicemail.linguai@gmail.com
+Time      : Wed, 27 Oct 2021 22:50:30 GMT
+Body      : 
+TEST
+TESTING
+ᐧ
+
+--------------------
+What can I do for you?
+User: what happened
+Sorry, can you speak again?
