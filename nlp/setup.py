@@ -20,9 +20,7 @@ setup(
         'pylint',
         'pytest',
         'requests',
-        'SpeechRecognition',
-        'gtts',
-        'pydub'
+        'google-cloud-dialogflow'
     ],
     python_requires='>=3.6',
 )
