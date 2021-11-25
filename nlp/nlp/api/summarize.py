@@ -31,7 +31,7 @@ class Summarize():
         for (word, tag) in tagged:
             if word in self.stop_words:
                 continue
-            if word.startswith('\''):
+            if word.startswith('\'') or word.endswith('”'):
                 continue
             if tag.startswith('N'):
                 words.append(word)
@@ -54,9 +54,11 @@ class Summarize():
         if meta is not None:
             title_tokens = set(self._tokenize(meta['title'])) if 'title' in meta else set()
             author_tokens = set(self._tokenize(meta['author'])) if 'author' in meta else set()
+            matched = set([token for token in title_tokens if token in text or token in words])
             return (
-                list(filtered_words & title_tokens - author_tokens),
-                list((filtered_words | title_tokens) - author_tokens - (filtered_words & title_tokens))
+                list(matched),
+                #list(set(words) & title_tokens - author_tokens),
+                list((filtered_words | title_tokens) - author_tokens - (matched & title_tokens))
             )
 
         else:
@@ -83,6 +85,8 @@ class Summarize():
                     for word in matched[:-1]:
                         ret_str += word + ", "
                     ret_str += "and " + matched[-1] + '. '
+                else:
+                    ret_str += matched[0] + '. '
                 if len(others) > 1:
                     ret_str += "It also talks about "
                     for word in others[:-1]:
@@ -111,6 +115,11 @@ if __name__ == '__main__':
     '''
     The main function here provides a simple demo
     '''
+    import json
+    import os
+    import sys
+    basepath = os.path.join(os.path.dirname(__file__))
+
     summarizer = Summarize()
     # email text to be summarized
     text = """Peter, application deadlines are rapidly approaching! If you're ready to apply, head to gradapply.rice.edu. Deadlines vary by program, so be sure to verify the deadlines that pertain to your application.
@@ -136,6 +145,13 @@ if __name__ == '__main__':
         'datatime': 'Nov 16, 2021, 3:22 PM',
         'title':    'Rice University application deadlines are approaching!'
     }
+    
+    # if no commandline argument is passed, use the demo above, otherwise use specified email 
+    if len(sys.argv) > 1:
+        email = sys.argv[1]
+        meta = json.load(open(os.path.join(basepath, "fake_email", email+'.json'), 'r+'))
+        with open(os.path.join(basepath, "fake_email", email+'.txt'), 'r+') as fin:
+            text = fin.read()
     # get the summary by calling the summary function
     summary = summarizer.summarize(text, meta=meta, k=5)
     print(summary)
