@@ -12,6 +12,7 @@ import re
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
+import nltk
 from nltk import word_tokenize, pos_tag
 from nltk.stem.porter import PorterStemmer
 import string
@@ -22,6 +23,9 @@ class Summarize():
         '''api_key should be acquired from https://deepai.org/machine-learning-model/summarization'''
         self.api_key = api_key
         self.stop_words = ENGLISH_STOP_WORDS.union(set(string.punctuation))
+        nltk.download('punkt')
+        nltk.download('averaged_perceptron_tagger')
+        
 
     def _tokenize(self, text):
         '''returns tokenized text'''

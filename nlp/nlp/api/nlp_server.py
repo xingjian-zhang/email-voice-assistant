@@ -1,7 +1,7 @@
 import json
 import flask
 import nlp
-from flask import request
+from flask import request, session
 import requests
 import os
 import sys
@@ -9,6 +9,8 @@ from pathlib import Path
 from tkinter import *
 from google.cloud import dialogflow
 import datetime
+import random
+from .summarize import Summarize
 
 LOGGING = False
 if LOGGING:
@@ -19,6 +21,18 @@ PROJECT_ID = "test-conv-ai-1011"
 LANGUAGE_CODE = "en-US"
 
 OPERATIONS = ["read", "unread","delete","spam"]
+
+summarizer = Summarize()
+
+@nlp.app.before_first_request
+def init_dialogflow():
+    # if not session.get("df_id"):
+    session_id = 1234
+    session["df_id"] = session_id # store the df session_id in flask session object
+    nlp.df_sessions[session_id] = Dialogflow_session(session_id=session_id)
+    with open('log_2.txt', 'w') as f:
+        f.write("Diagflow Initialized")
+
 
 @nlp.app.route('/', methods=["GET"])
 def base():
@@ -111,8 +125,19 @@ def get_response():
     #     bot_text = "OK."
     # # # 6. text2speech
     # # _text_to_audio(bot_text, "test_output.mp3")
-    df_session = flask.session["dialogflow"]
+
+    bot_response_dict = {
+        "bot_text_start": None, # the response should start with this string
+        "sender": None, # sender name without email addr, e.g. Changyuan Qiu
+        "summary": None, # summary of the email
+        "body": None, # whole body of the email
+        "bot_text_end": None, # the response should end with this string, e.g. Do you want to know more about this email?
+    }
+    session_id = 1234
+    df_session = nlp.df_sessions[session_id]
     action, email_ids, args, bot_text = df_session.parse_command_dialogflow(user_text)
+
+    bot_response_dict["bot_text_start"] = bot_text
     action_type = action.split('.')[0]
     command = action.split('.')[1]  # e.g. read, unread, spam...
 
@@ -121,20 +146,32 @@ def get_response():
         if command in OPERATIONS: # send command to backend only when command is in OPERATIONS (operations on an email)
             for email_id in email_ids:
                 _send_command(command, email_id, args)
-        elif command == "speak": # read the email out for the user
-            sender = df_session.curr_email_dict["from"]
+        elif command == "speak_summary": # read the email out for the user
+            sender_name = _get_name_from_sender(df_session.curr_email_dict["from"])
             email_body = df_session.curr_email_dict["body"]
-            extra_bot_text = f" The email is from {sender}. The body is as follows: {email_body}"
-            bot_text += extra_bot_text
-            # todo: do we need to mark it as read?
+            summary = summarizer.summarize(email_body) # todo: set the summary args
+            bot_response_dict["sender"] = sender_name
+            bot_response_dict["summary"] = summary
+            bot_response_dict["bot_text_end"] = " Do you want to know more about this email?"
+        elif command == "speak_whole": # read the email out for the user
+            sender_name = _get_name_from_sender(df_session.curr_email_dict["from"])
+            email_body = df_session.curr_email_dict["body"]
+            bot_response_dict["sender"] = sender_name
+            bot_response_dict["body"] = email_body
 
     if LOGGING:
-        fp.write(bot_text+"\n")
+        fp.write(bot_text+"\n") # todo: how to log properly? bot text is not a complete response
 
     return flask.jsonify({
         "user": user_text,
-        "bot": bot_text
+        "bot": bot_response_dict
     })
+
+
+def _get_name_from_sender(sender:str) -> str:
+    email_addr_start_idx = sender.find('<')
+    name = sender[:email_addr_start_idx]
+    return name.strip()
 
 
 def _mail_dict_to_str(mail_dict):
@@ -269,7 +306,7 @@ class Dialogflow_session:
 
     def _build_session(self):
         self.session_client = dialogflow.SessionsClient.from_service_account_json(
-            './nlp/private_key/test-conv-ai-1011-3b1d693b53da.json')  # todo: need a more reasonable way to hardcode the file path
+            str(Path("nlp") / "nlp" / "dialogflow" / "private_key"/ "test-conv-ai-1011-3b1d693b53da.json"))  # todo: need a more reasonable way to hardcode the file path
 
         self.session = self.session_client.session_path(self.project_id, self.session_id)
         print("Session path: {}\n".format(self.session))
