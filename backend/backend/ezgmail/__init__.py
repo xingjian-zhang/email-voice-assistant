@@ -485,7 +485,7 @@ class GmailMessage:
         send(self.sender + ', ' + self.recipient, self.subject, body, attachments=attachments,
              cc=cc, bcc=bcc, mimeSubtype=mimeSubtype, _threadId=self.threadId)
 
-    def forward(self, recipient, body, attachments=None, cc=None, bcc=None, mimeSubtype="plain"):
+    def forward(self, recipient, body="", attachments=None, cc=None, bcc=None, mimeSubtype="plain"):
         # TODO: add extra attachments
         send(recipient, f"fwd: {self.subject}", self.forwardBody(body), attachments=self.attachments, cc=cc, bcc=bcc, mimeSubtype=mimeSubtype,
              _threadId=self.threadId)

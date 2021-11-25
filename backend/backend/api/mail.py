@@ -85,7 +85,7 @@ def _command(email_id, command, args={}):
         elif command == 'delete':
             m.trash()
         elif command == 'forward':
-            m.forward
+            m.forward(args["recipient"])
     else:
         # Query (for now)
         if command == "search":
