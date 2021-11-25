@@ -18,7 +18,7 @@ if LOGGING:
 PROJECT_ID = "test-conv-ai-1011"
 LANGUAGE_CODE = "en-US"
 
-OPERATIONS = ["read","unread","delete","spam"]
+OPERATIONS = ["read", "unread","delete","spam"]
 
 @nlp.app.route('/', methods=["GET"])
 def base():

@@ -15,6 +15,7 @@ FONT_BOLD = "Helvetica 13 bold"
 
 NLP_SERVER_PORT = 3001
 
+
 def reset_tabstop(event):
     event.widget.configure(tabs=(event.width - 30, "right"))
 
