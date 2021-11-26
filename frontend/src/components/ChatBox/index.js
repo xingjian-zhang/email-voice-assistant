@@ -63,7 +63,45 @@ const ChatBox = () => {
     } else {
       string += ".";
     }
-    return string
+    return string;
+  }
+
+  function generateResponse(bot) { // TODO - if
+    // object with keys {body, bot_text_end, bot_text_start, sender, summary}).
+    return (
+      <div>
+        {bot.bot_text_start} {bot.sender && <text>This email is from {bot.sender}.</text>} {bot.summary}  
+        {bot.body && <div className="mail-message">{bot.body}</div>}
+        {bot.bot_text_end}
+      </div>
+    );
+  }
+
+  function generateText(bot) {
+    var text = "";
+    text += bot.bot_text_start;
+    if (bot.sender) {
+    text += " This email is from " + bot.sender + ". ";
+    };
+    if (bot.summary) {
+      text += bot.summary;
+    };
+    if (bot.body) {
+      text += bot.body;
+    };
+    if (bot.bot_text_end){
+      text += bot.bot_text_end;
+    };
+    return text;
+  }
+
+  function removeLink(text) {
+    if (text) {
+      var new_text = text.replace(/<*(?:https?|ftp):\/\/[\n\S]+>*/g, '');
+      return new_text;
+    } else {
+      return text;
+    }
   }
 
   const startSpeak = () => {
@@ -100,10 +138,14 @@ const ChatBox = () => {
           text: trans
       }
     }).then(res => {
-        setMsg([...msgArr,res.data.bot]);
+        res.data.bot.body = removeLink(res.data.bot.body);
+        var struct_response = generateResponse(res.data.bot);
+        setMsg([...msgArr, struct_response]);
         setSpeaker([...speaker, 0]);
+        var s = generateText(res.data.bot);
+        console.log(s);
         setTimeout(() => {
-          speak(res.data.bot);
+          speak(s);
         }, 1000);
       }
     ).then (err=>{
