@@ -128,7 +128,10 @@ def get_response():
 
     bot_response_dict = {
         "bot_text_start": None, # the response should start with this string
-        "sender": None, # sender name without email addr, e.g. Changyuan Qiu
+        "from": None, # sender name without email addr, e.g. Changyuan Qiu
+        "to": None,  # recipient name without email addr, e.g. Changyuan Qiu
+        "subject": None, # title
+        "time": None, # send time
         "summary": None, # summary of the email
         "body": None, # whole body of the email
         "bot_text_end": None, # the response should end with this string, e.g. Do you want to know more about this email?
@@ -146,17 +149,34 @@ def get_response():
         if command in OPERATIONS: # send command to backend only when command is in OPERATIONS (operations on an email)
             for email_id in email_ids:
                 _send_command(command, email_id, args)
+
         elif command == "speak_summary": # read the email out for the user
             sender_name = _get_name_from_sender(df_session.curr_email_dict["from"])
+            recipient_name = _get_name_from_sender(df_session.curr_email_dict["to"])
+            subject = df_session.curr_email_dict["subject"]
+            time = df_session.curr_email_dict["time"]
             email_body = df_session.curr_email_dict["body"]
-            summary = summarizer.summarize(email_body) # todo: set the summary args
-            bot_response_dict["sender"] = sender_name
+
+            meta = {'title':subject, 'author':sender_name}
+            summary = summarizer.summarize(email_body, meta=meta) # todo: set the summary args
+
+            bot_response_dict["from"] = sender_name
+            bot_response_dict["to"] = recipient_name
+            bot_response_dict["subject"] = subject
+            bot_response_dict["time"] = time
             bot_response_dict["summary"] = summary
             bot_response_dict["bot_text_end"] = " Do you want to know more about this email?"
+
         elif command == "speak_whole": # read the email out for the user
             sender_name = _get_name_from_sender(df_session.curr_email_dict["from"])
+            recipient_name = _get_name_from_sender(df_session.curr_email_dict["to"])
+            subject = df_session.curr_email_dict["subject"]
+            time = df_session.curr_email_dict["time"]
             email_body = df_session.curr_email_dict["body"]
-            bot_response_dict["sender"] = sender_name
+            bot_response_dict["from"] = sender_name
+            bot_response_dict["to"] = recipient_name
+            bot_response_dict["subject"] = subject
+            bot_response_dict["time"] = time
             bot_response_dict["body"] = email_body
 
     if LOGGING:
