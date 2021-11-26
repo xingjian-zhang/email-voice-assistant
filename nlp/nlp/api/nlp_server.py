@@ -128,7 +128,10 @@ def get_response():
 
     bot_response_dict = {
         "bot_text_start": None, # the response should start with this string
-        "sender": None, # sender name without email addr, e.g. Changyuan Qiu
+        "from": None, # sender name without email addr, e.g. Changyuan Qiu
+        "to": None,  # recipient name without email addr, e.g. Changyuan Qiu
+        "subject": None, # title
+        "time": None, # send time
         "summary": None, # summary of the email
         "body": None, # whole body of the email
         "bot_text_end": None, # the response should end with this string, e.g. Do you want to know more about this email?
@@ -146,17 +149,34 @@ def get_response():
         if command in OPERATIONS: # send command to backend only when command is in OPERATIONS (operations on an email)
             for email_id in email_ids:
                 _send_command(command, email_id, args)
+
         elif command == "speak_summary": # read the email out for the user
             sender_name = _get_name_from_sender(df_session.curr_email_dict["from"])
+            recipient_name = _get_name_from_sender(df_session.curr_email_dict["to"])
+            subject = df_session.curr_email_dict["subject"]
+            time = df_session.curr_email_dict["time"]
             email_body = df_session.curr_email_dict["body"]
-            summary = summarizer.summarize(email_body) # todo: set the summary args
-            bot_response_dict["sender"] = sender_name
+
+            meta = {'title':subject, 'author':sender_name}
+            summary = summarizer.summarize(email_body, meta=meta) # todo: set the summary args
+
+            bot_response_dict["from"] = sender_name
+            bot_response_dict["to"] = recipient_name
+            bot_response_dict["subject"] = subject
+            bot_response_dict["time"] = time
             bot_response_dict["summary"] = summary
             bot_response_dict["bot_text_end"] = " Do you want to know more about this email?"
+
         elif command == "speak_whole": # read the email out for the user
             sender_name = _get_name_from_sender(df_session.curr_email_dict["from"])
+            recipient_name = _get_name_from_sender(df_session.curr_email_dict["to"])
+            subject = df_session.curr_email_dict["subject"]
+            time = df_session.curr_email_dict["time"]
             email_body = df_session.curr_email_dict["body"]
-            bot_response_dict["sender"] = sender_name
+            bot_response_dict["from"] = sender_name
+            bot_response_dict["to"] = recipient_name
+            bot_response_dict["subject"] = subject
+            bot_response_dict["time"] = time
             bot_response_dict["body"] = email_body
 
     if LOGGING:
@@ -306,7 +326,7 @@ class Dialogflow_session:
 
     def _build_session(self):
         self.session_client = dialogflow.SessionsClient.from_service_account_json(
-            str(Path("nlp") / "nlp" / "dialogflow" / "private_key"/ "test-conv-ai-1011-3b1d693b53da.json"))  # todo: need a more reasonable way to hardcode the file path
+            str(Path("nlp") / "dialogflow" / "private_key"/ "test-conv-ai-1011-3b1d693b53da.json"))  # todo: need a more reasonable way to hardcode the file path
 
         self.session = self.session_client.session_path(self.project_id, self.session_id)
         print("Session path: {}\n".format(self.session))
@@ -360,8 +380,20 @@ class Dialogflow_session:
 
         if action_type == "command":  # means this is an operation to the email, e.g. forward, delete, mark as read
             mode = action.split('.')[2]
-            if mode == "this": # manipulate on current email
-                pass
+            if mode == "ref": # ref to this/next/prev email
+                ref_word = parameters.get("referencewords")
+                if ref_word is not None:
+                    if ref_word == "this email":
+                        pass
+                    elif ref_word == "next email":
+                        self._get_next_or_prev_email("next")
+                        email_ids = [self.curr_email_id]
+                    elif ref_word == "previous email":
+                        self._get_next_or_prev_email("prev")
+                        email_ids = [self.curr_email_id]
+                    else:
+                        raise ValueError(f"invalid ref word: {ref_word}")
+
             elif mode == "time":
                 date = parameters["date-time"][:len("0000-00-00")]
                 date_split = date.split('-')
@@ -371,11 +403,11 @@ class Dialogflow_session:
                 query = f"label:INBOX after:{prev_day.isoformat()} before:{next_day.isoformat()}" # query exactly this day
                 self._query_backend_and_get_email(query) # modify self.email_id
                 email_ids = self.query_email_ids
+
+            elif mode == "followup_this": # followup on the current email, e.g. Do you want to know more about this email? - Yes.
+                pass
             elif mode == "no_action":
                 pass
-            elif mode == "prev" or mode == "next":
-                self._get_next_or_prev_email(mode)
-                email_ids = [self.curr_email_id]
             else:
                 raise Exception(f"mode [{mode}] is not implemented")
 
