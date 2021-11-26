@@ -95,6 +95,15 @@ const ChatBox = () => {
     return text;
   }
 
+  function removeLink(text) {
+    if (text) {
+      var new_text = text.replace(/<*(?:https?|ftp):\/\/[\n\S]+>*/g, '');
+      return new_text;
+    } else {
+      return text;
+    }
+  }
+
   const startSpeak = () => {
     setIsRecording(true);
     resetTranscript();
@@ -129,6 +138,7 @@ const ChatBox = () => {
           text: trans
       }
     }).then(res => {
+        res.data.bot.body = removeLink(res.data.bot.body);
         var struct_response = generateResponse(res.data.bot);
         setMsg([...msgArr, struct_response]);
         setSpeaker([...speaker, 0]);
