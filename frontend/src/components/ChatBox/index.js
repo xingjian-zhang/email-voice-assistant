@@ -70,8 +70,8 @@ const ChatBox = () => {
     // object with keys {body, bot_text_end, bot_text_start, sender, summary}).
     return (
       <div>
-        {bot.bot_text_start} {bot.sender && <text>This email is from {bot.sender}.</text>} {bot.summary}  
-        {bot.subject && <div className="mail-subject">Subject: {bot.subject}</div>}
+        {bot.bot_text_start} {bot.from && <text>This email is from {bot.from}.</text>} {bot.summary}  
+        {bot.subject && <div className="mail-subject">{bot.subject}</div>}
         {bot.body && <div className="mail-message">{bot.body}</div>} 
         {bot.bot_text_end}
       </div>
@@ -81,8 +81,8 @@ const ChatBox = () => {
   function generateText(bot) {
     var text = "";
     text += bot.bot_text_start + " ";
-    if (bot.sender) {
-    text += " This email is from " + bot.sender + ". ";
+    if (bot.from) {
+    text += " This email is from " + bot.from + ". ";
     };
     if (bot.summary) {
       text += " " + bot.summary;
@@ -132,7 +132,8 @@ const ChatBox = () => {
     trans = capitalizeFirstLetter(trans);
     trans = trans.replace("start","star");
     trans = trans.replace("rat","read");
-    trans = trans.replace("female", "email"); 
+    trans = trans.replace("female", "email");
+    trans = trans.replace("hungry", "Hangrui");
     var msgArr = [...msg.slice(0,-1), trans];
     setMsg(msgArr);
     await axios.get('/response/',{
