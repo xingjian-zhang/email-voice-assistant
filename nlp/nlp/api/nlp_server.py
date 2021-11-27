@@ -20,7 +20,7 @@ if LOGGING:
 PROJECT_ID = "test-conv-ai-1011"
 LANGUAGE_CODE = "en-US"
 
-OPERATIONS = ["read", "unread","delete","spam","forward"]
+OPERATIONS = ["read", "unread","delete","spam", "forward", "star"]
 
 summarizer = Summarize()
 
@@ -129,7 +129,7 @@ def get_response():
     bot_response_dict = {
         "bot_text_start": None, # the response should start with this string
         "from": None, # sender name without email addr, e.g. Changyuan Qiu
-        "to": None,  # recipient name without email addr, e.g. Changyuan Qiu
+        # "to": None,  # recipient name without email addr, e.g. Changyuan Qiu
         "subject": None, # title
         "time": None, # send time
         "summary": None, # summary of the email
@@ -152,7 +152,7 @@ def get_response():
 
         elif command == "speak_summary": # read the email out for the user
             sender_name = _get_name_from_sender(df_session.curr_email_dict["from"])
-            recipient_name = _get_name_from_sender(df_session.curr_email_dict["to"])
+            # recipient_name = _get_name_from_sender(df_session.curr_email_dict["to"])
             subject = df_session.curr_email_dict["subject"]
             time = df_session.curr_email_dict["time"]
             email_body = df_session.curr_email_dict["body"]
@@ -161,7 +161,7 @@ def get_response():
             summary = summarizer.summarize(email_body, meta=meta) # todo: set the summary args
 
             bot_response_dict["from"] = sender_name
-            bot_response_dict["to"] = recipient_name
+            # bot_response_dict["to"] = recipient_name
             bot_response_dict["subject"] = subject
             bot_response_dict["time"] = time
             bot_response_dict["summary"] = summary
@@ -169,12 +169,12 @@ def get_response():
 
         elif command == "speak_whole": # read the email out for the user
             sender_name = _get_name_from_sender(df_session.curr_email_dict["from"])
-            recipient_name = _get_name_from_sender(df_session.curr_email_dict["to"])
+            # recipient_name = _get_name_from_sender(df_session.curr_email_dict["to"])
             subject = df_session.curr_email_dict["subject"]
             time = df_session.curr_email_dict["time"]
             email_body = df_session.curr_email_dict["body"]
             bot_response_dict["from"] = sender_name
-            bot_response_dict["to"] = recipient_name
+            # bot_response_dict["to"] = recipient_name
             bot_response_dict["subject"] = subject
             bot_response_dict["time"] = time
             bot_response_dict["body"] = email_body
@@ -189,6 +189,8 @@ def get_response():
 
 
 def _get_name_from_sender(sender:str) -> str:
+    if isinstance(sender, list):
+        sender = sender[0]  # select the first sender if sender is a list
     email_addr_start_idx = sender.find('<')
     name = sender[:email_addr_start_idx]
     return name.strip()
@@ -325,8 +327,7 @@ class Dialogflow_session:
 
 
     def _build_session(self):
-        self.session_client = dialogflow.SessionsClient.from_service_account_json(
-            str(Path("/Users/hangruicao/Documents/eecs498/email-voice-assistant/nlp/nlp/") / "dialogflow" / "private_key"/ "test-conv-ai-1011-3b1d693b53da.json"))  # todo: need a more reasonable way to hardcode the file path
+        self.session_client = dialogflow.SessionsClient.from_service_account_json(nlp.app.config["PRIVATE_KEY"])
 
         self.session = self.session_client.session_path(self.project_id, self.session_id)
         print("Session path: {}\n".format(self.session))
