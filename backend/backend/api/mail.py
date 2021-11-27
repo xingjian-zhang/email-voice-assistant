@@ -3,6 +3,7 @@ from flask import request
 import backend
 import backend.ezgmail as ezgmail
 import json
+import os
 
 @backend.app.route('/', methods=["GET"])
 def index():
@@ -87,7 +88,7 @@ def _command(email_id, command, args={}):
         elif command == 'star':
             m.star()
         elif command == 'forward':
-            namedict = json.load(open("namedict.json"))
+            namedict = json.load(open(os.path.join(os.path.dirname(__file__), "namedict.json")))
             emailadd = None
             if args["recipient"] in namedict:
                 emailadd=namedict[args["recipient"]]
