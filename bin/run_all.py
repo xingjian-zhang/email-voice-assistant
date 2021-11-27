@@ -17,7 +17,7 @@ process = {}
 for d in drivers:
     driver_name = "debug_" + d if DEBUG else "run_" + d
     driver_path = os.path.join(dir_name, driver_name)
-    process[d] = subprocess.Popen([driver_path], stdout=open(d + ".log", mode="w"))
+    process[d] = subprocess.Popen([driver_path])
 
 # yarn
 os.chdir("frontend")

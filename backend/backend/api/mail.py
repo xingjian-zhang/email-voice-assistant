@@ -72,7 +72,7 @@ def _command(email_id, command, args={}):
     2. `reply`
     """
     response = None
-    labeling = ["read", "unread", "spam", "delete"]
+    labeling = ["read", "unread", "spam", "delete", "star", "forward"]
     if command in labeling:
         # Simple labeling & No response
         m = ezgmail.get(email_id)  # Absolute index from previous query
@@ -84,6 +84,8 @@ def _command(email_id, command, args={}):
             m.markAsSpam()
         elif command == 'delete':
             m.trash()
+        elif command == 'star':
+            m.star()
         elif command == 'forward':
             m.forward(args["recipient"])  # We can add additional forward message
     else:
