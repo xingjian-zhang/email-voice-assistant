@@ -20,7 +20,7 @@ if LOGGING:
 PROJECT_ID = "test-conv-ai-1011"
 LANGUAGE_CODE = "en-US"
 
-OPERATIONS = ["read", "unread","delete","spam"]
+OPERATIONS = ["read", "unread","delete","spam", "forward"]
 
 summarizer = Summarize()
 
@@ -335,7 +335,6 @@ class Dialogflow_session:
         text_input = dialogflow.TextInput(text=text, language_code=self.language_code)
 
         query_input = dialogflow.QueryInput(text=text_input)
-
         # print("send query to df")
 
         response = self.session_client.detect_intent(
@@ -360,6 +359,7 @@ class Dialogflow_session:
 
         if action_type == "command":  # means this is an operation to the email, e.g. forward, delete, mark as read
             mode = action.split('.')[2]
+            print('the mode is ', mode)
             if mode == "this": # manipulate on current email
                 pass
             elif mode == "time":
