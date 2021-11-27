@@ -178,6 +178,7 @@ def get_response():
             bot_response_dict["subject"] = subject
             bot_response_dict["time"] = time
             bot_response_dict["body"] = email_body
+            _send_command("read", df_session.query_email_id, {})
 
     if LOGGING:
         fp.write(bot_text+"\n") # todo: how to log properly? bot text is not a complete response
