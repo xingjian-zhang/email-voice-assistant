@@ -427,6 +427,14 @@ class Dialogflow_session:
                 self._query_backend_and_get_email(query) # modify self.email_id
                 email_ids = self.query_email_id # list
 
+            elif mode == "condition":
+                key_words = parameters["any"]
+                query = key_words
+                self._query_backend_and_get_email(query)  # modify self.email_id
+                self.query_email_id = self.query_email_id[0]
+                self.query_email_dict = self.query_email_dict[0]
+                email_ids = [self.query_email_id]
+
             elif mode == "followup_this": # followup on the active email, e.g. Do you want to know more about this email? - Yes.
                 email_ids = [self.query_email_id] # set the email_ids to the active email rather than the current email
             elif mode == "no_action":
