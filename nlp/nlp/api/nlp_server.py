@@ -20,7 +20,7 @@ if LOGGING:
 PROJECT_ID = "test-conv-ai-1011"
 LANGUAGE_CODE = "en-US"
 
-OPERATIONS = ["read", "unread","delete","spam"]
+OPERATIONS = ["read", "unread","delete","spam","forward"]
 
 summarizer = Summarize()
 
@@ -326,7 +326,7 @@ class Dialogflow_session:
 
     def _build_session(self):
         self.session_client = dialogflow.SessionsClient.from_service_account_json(
-            str(Path("nlp") / "dialogflow" / "private_key"/ "test-conv-ai-1011-3b1d693b53da.json"))  # todo: need a more reasonable way to hardcode the file path
+            str(Path("/Users/hangruicao/Documents/eecs498/email-voice-assistant/nlp/nlp/") / "dialogflow" / "private_key"/ "test-conv-ai-1011-3b1d693b53da.json"))  # todo: need a more reasonable way to hardcode the file path
 
         self.session = self.session_client.session_path(self.project_id, self.session_id)
         print("Session path: {}\n".format(self.session))
