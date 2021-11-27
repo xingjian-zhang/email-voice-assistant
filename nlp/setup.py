@@ -20,6 +20,11 @@ setup(
         'pylint',
         'pytest',
         'requests',
+        'google-cloud-dialogflow',
+        'google-cloud-speech',
+        'numpy',
+        'scikit-learn',
+        'nltk'
     ],
     python_requires='>=3.6',
 )

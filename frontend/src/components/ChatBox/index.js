@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './scoped.css';
-import RobIcon from '../../img/RobIcon.png';
-import UserIcon from '../../img/UserIcon.png';
+// import RobIcon from '../../img/RobIcon.png';
+// import UserIcon from '../../img/UserIcon.png';
+import BoyIcon from '../../img/Boy.jpeg';
+import GirlIcon from '../../img/Girl.jpeg';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import { AudioOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -9,6 +11,7 @@ import axios from 'axios';
 const ChatBox = () => {
   const {
     transcript,
+    finalTranscript,
     resetTranscript,
   } = useSpeechRecognition();
   const chatRef = useRef(null);
@@ -47,6 +50,64 @@ const ChatBox = () => {
     window.speechSynthesis.speak(msg);
   }
 
+  function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
+  function punctuate(string){
+    // Punctuate according to rule
+    const question = ["what", "who", "how", "when", "which", "whom", "whose", "why", "may", "can", "could"];
+    var first_word = string.split(" ")[0];
+    if (question.includes(first_word.toLowerCase())) {
+      string += "?";
+    } else {
+      string += ".";
+    }
+    return string;
+  }
+
+  function generateResponse(bot) { // TODO - if
+    // object with keys {body, bot_text_end, bot_text_start, sender, summary}).
+    return (
+      <div>
+        {bot.bot_text_start} {bot.from && <text>This email is from {bot.from}.</text>} {bot.summary}  
+        {bot.subject && <div className="mail-subject">{bot.subject}</div>}
+        {bot.body && <div className="mail-message">{bot.body}</div>} 
+        {bot.bot_text_end}
+      </div>
+    );
+  }
+
+  function generateText(bot) {
+    var text = "";
+    text += bot.bot_text_start + " ";
+    if (bot.from) {
+    text += " This email is from " + bot.from + ". ";
+    };
+    if (bot.summary) {
+      text += " " + bot.summary;
+    };
+    if (bot.subject) {
+      text += " The subject is " + bot.subject;
+    };
+    if (bot.body) {
+      text += " The body is: " + bot.body;
+    };
+    if (bot.bot_text_end){
+      text += bot.bot_text_end;
+    };
+    return text;
+  }
+
+  function removeLink(text) {
+    if (text) {
+      var new_text = text.replace(/<*(?:https?|ftp):\/\/[\n\S]+>*/g, '');
+      return new_text;
+    } else {
+      return text;
+    }
+  }
+
   const startSpeak = () => {
     setIsRecording(true);
     resetTranscript();
@@ -58,9 +119,21 @@ const ChatBox = () => {
   const stopSpeak = async () => {
     setIsRecording(false);
     SpeechRecognition.stopListening();
-    var trans = String(transcript);
+    var trans = "";
+    var trans_cur = String(transcript);
+    var trans_final = String(finalTranscript);
+    if (trans_final) {  // if the final transcript is ready, use the final one
+      trans = trans_final;
+    } else {
+      trans = trans_cur;
+    }
+    console.log(trans);
+    trans = punctuate(trans);
+    trans = capitalizeFirstLetter(trans);
     trans = trans.replace("start","star");
     trans = trans.replace("rat","read");
+    trans = trans.replace("female", "email");
+    trans = trans.replace("hungry", "Hangrui");
     var msgArr = [...msg.slice(0,-1), trans];
     setMsg(msgArr);
     await axios.get('/response/',{
@@ -71,10 +144,14 @@ const ChatBox = () => {
           text: trans
       }
     }).then(res => {
-        setMsg([...msgArr,res.data.bot]);
+        res.data.bot.body = removeLink(res.data.bot.body);
+        var struct_response = generateResponse(res.data.bot);
+        setMsg([...msgArr, struct_response]);
         setSpeaker([...speaker, 0]);
+        var s = generateText(res.data.bot);
+        console.log(s);
         setTimeout(() => {
-          speak(res.data.bot);
+          speak(s);
         }, 1000);
       }
     ).then (err=>{
@@ -93,7 +170,7 @@ const ChatBox = () => {
           msg.map((m,i) => (
               !speaker[i] ? (
                 <div className="assistant-box">
-                  <img  className="assistant-avatar" src={RobIcon} />
+                  <img  className="assistant-avatar" src={BoyIcon} />
                   <div className="assistant-msg">
                     {m}
                   </div>
@@ -101,7 +178,7 @@ const ChatBox = () => {
               ) : (
                 speaker[i] && (
                 <div className="user-box">
-                  <img  className="user-avatar" src={UserIcon} />
+                  <img  className="user-avatar" src={GirlIcon} />
                   <div className="user-msg">
                     {m}
                   </div>
@@ -116,17 +193,15 @@ const ChatBox = () => {
       <div className="record-listen">
             {
               isRecording && (
-                <div className="mic-box" onClick={stopSpeak} >
+                <div className="mic-box" onClick={stopSpeak} style={{"background-color": "#00274C", color: "white"}} >
                   <AudioOutlined style={{ fontSize: 27 }}/><br/>
-                  Stop
                 </div>
               )
             }
             {
               !isRecording && (
                 <div className="mic-box" onClick={startSpeak} >
-                  < AudioOutlined style={{ fontSize: 27 }}/><br/>
-                  Record
+                  < AudioOutlined style={{ fontSize: 27}}/><br/>
                 </div>
               )
             }

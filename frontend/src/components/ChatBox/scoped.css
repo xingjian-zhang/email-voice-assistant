@@ -1,8 +1,8 @@
 .chat-box-div {
     width: 500px;
-    height: 600px;
+    height: 100%;
     border: solid 1px #ffffff;
-    background-color: #ffffff8c;
+    background-color: #ffffffd9;
     border-radius: 2%;
     font-family: Sans-serif;
     box-shadow: 3px 10px 10px 10px #00000009;
@@ -10,7 +10,7 @@
 
 .chat-box {
     width: 460px;
-    height: 480px;
+    height: 675px;
     margin: 25px 20px 25px 20px;
     overflow: scroll;
 }
@@ -82,32 +82,36 @@
 .record-listen {
     display: flex;
     width: 500px;
-    height: 50px;
+    height: 60px;
     justify-content: space-around;
     cursor: pointer;
 }
 
 .mic-box {
     display: block;
-    padding-top: 5px;
+    padding-top: 10px;
     text-align: center;
-    /* border: solid 1px #00274C; */
+    border: solid 2px #00274C;
     border-radius: 50%;
-    background-color: #002b53ed;
-    color: #00274c00;  /*remove logo later - TODO*/
+    /* background-color: #889e37ed; */
     width: 50px;
-    height: 45px;
+    height: 40px;
     font-size: 10px;
     font-weight: bold;
     transition: ease-in-out 0.2s;
 }
 
-.mic-box:hover {
-    background-color: rgba(194, 194, 2, 0.555);
-    color: white;  /*remove logo later - TODO*/
-
-}
-
 audio {
     display: none;
+}
+
+.mail-message {
+    margin: 10px 10px 0px 10px;
+    font-style: italic;
+}
+
+.mail-subject {
+    margin: 10px 10px 0px 10px;
+    font-style: italic;
+    font-weight: bold;
 }

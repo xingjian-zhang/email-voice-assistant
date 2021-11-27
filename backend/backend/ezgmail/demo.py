@@ -96,6 +96,20 @@ def DownloadAttachments(GmailThreadObject, path):
     GmailThreadObject.downloadAllAttachments(path)
 
 
+def Reply(GmailThreadObject, body, attachments=None, cc=None, bcc=None, mimeSubtype="plain"):
+    """
+    Reply.
+    """
+    GmailThreadObject.reply(body, attachments, cc, bcc, mimeSubtype)
+
+
+def Forward(GmailThreadObject, recipient, body=None, attachments=None, cc=None, bcc=None):
+    """
+    Forward an email.
+    """
+    GmailThreadObject.forward(recipient, body, attachments, cc, bcc)
+
+
 if __name__ == '__main__':
     search('subject:test ezgmail')
     send('xinyu_lu@sjtu.edu.cn', 'test ezgmail send one',
@@ -104,5 +118,6 @@ if __name__ == '__main__':
     recentThreads = recent()
     delete(recentThreads[0])
     MardAsRead(unreadThreads[0])
+    Forward(recentThreads[0], "ruiyuli@umich.edu", "hey I am testing. Iris")
     MardAsUnread(recentThreads[0])
     DownloadAttachments(recentThreads[0], '.')
