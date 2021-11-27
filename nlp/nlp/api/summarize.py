@@ -91,11 +91,11 @@ class Summarize():
                     ret_str += "and " + matched[-1] + '. '
                 else:
                     ret_str += matched[0] + '. '
-                if len(others) > 1:
-                    ret_str += "It also talks about "
-                    for word in others[:-1]:
-                        ret_str += word + ", "
-                    ret_str += "and " + others[-1] + '.'
+                # if len(others) > 1:
+                #     ret_str += "It also talks about "
+                #     for word in others[:-1]:
+                #         ret_str += word + ", "
+                #     ret_str += "and " + others[-1] + '.'
             else:
                 ret_str += "about "
                 for word in others[:-1]:
