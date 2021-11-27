@@ -36,17 +36,31 @@ const ChatBox = () => {
     );
     var openMsg =
       "Hi, I am your intelligent voice email assistant. What can I help you?";
-    setMsg([...msg, openMsg]);
-    setSpeaker([...speaker, 0]);
+    setMsg([openMsg]);
+    setSpeaker([0]);
     setTimeout(() => {
-      speak(openMsg);
+      var voices = speechSynthesis.getVoices();
+      var msg = new SpeechSynthesisUtterance(openMsg);
+      if (voices.length === 0) {
+          window.speechSynthesis.addEventListener("voiceschanged", () => {
+          voices = speechSynthesis.getVoices();
+          msg.voice = voices[49]; 
+          window.speechSynthesis.cancel();
+          window.speechSynthesis.speak(msg);
+        })
+      }
+      else {
+        msg.voice = voices[49]; 
+        window.speechSynthesis.speak(msg);
+      }
     }, 1000);
   }, [])
 
-  function speak(message) {
+  async function speak(message) {
+    window.speechSynthesis.cancel();
     var msg = new SpeechSynthesisUtterance(message);
     var voices = window.speechSynthesis.getVoices();
-    msg.voice = voices[0];
+    msg.voice = voices[49]; 
     window.speechSynthesis.speak(msg);
   }
 
