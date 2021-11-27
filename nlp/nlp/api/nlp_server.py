@@ -347,7 +347,7 @@ class Dialogflow_session:
     def parse_command_dialogflow(self, text):
         # print("get user text")
         action, parameters, fulfill_text = self._detect_intent_texts(text)
-        args, email_ids = self._parse(action, parameters)
+        action, args, email_ids = self._parse(action, parameters)
 
         return action, email_ids, args, fulfill_text
 
@@ -376,14 +376,16 @@ class Dialogflow_session:
         modify: self.email_id, self.email_dict
         return: args for sending command, and a list of email ids
         """
+        args = {}
         email_ids = [self.curr_email_id]
         action_type = action.split('.')[0]
 
         if action_type == "command":  # means this is an operation to the email, e.g. forward, delete, mark as read
             mode = action.split('.')[2]
+            command = action.split('.')[1]
             if mode == "ref": # ref to this/next/prev email
                 ref_word = parameters.get("referencewords")
-                if ref_word is not None:
+                if ref_word is not None and ref_word != "":
                     if ref_word == "this email":
                         pass
                     elif ref_word == "next email":
@@ -394,6 +396,17 @@ class Dialogflow_session:
                         email_ids = [self.curr_email_id]
                     else:
                         raise ValueError(f"invalid ref word: {ref_word}")
+                else:
+                    action = "command.default.no_action"
+
+                if command == "forward":
+                    person = parameters.get("person")
+                    if person is not None and person != "":
+                        name = person["name"]
+                        args['recipient'] = name
+                    else:
+                        print("no recipient specified")
+                        action = "command.default.no_action"
 
             elif mode == "time":
                 date = parameters["date-time"][:len("0000-00-00")]
@@ -415,8 +428,7 @@ class Dialogflow_session:
         elif action_type == "dialog": # means this is only a normal dialog, no action needed
             pass # todo
 
-        args = {} # todo: args sent to backend, sometimes should be a list (e.g. forward)
-        return args, email_ids
+        return action, args, email_ids
 
 
     def _query_backend_and_get_email(self, query):
