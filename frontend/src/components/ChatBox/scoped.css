@@ -109,3 +109,9 @@ audio {
     margin: 10px 10px 0px 10px;
     font-style: italic;
 }
+
+.mail-subject {
+    margin: 10px 10px 0px 10px;
+    font-style: italic;
+    font-weight: bold;
+}
