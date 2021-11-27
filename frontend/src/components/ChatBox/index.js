@@ -109,6 +109,7 @@ const ChatBox = () => {
   }
 
   const startSpeak = () => {
+    window.speechSynthesis.cancel();
     setIsRecording(true);
     resetTranscript();
     setMsg([...msg, '...']);
@@ -193,7 +194,7 @@ const ChatBox = () => {
       <div className="record-listen">
             {
               isRecording && (
-                <div className="mic-box" onClick={stopSpeak} style={{"background-color": "#00274C", color: "white"}} >
+                <div className="mic-box" onClick={stopSpeak} style={{"backgroundColor": "#00274C", color: "white"}} >
                   <AudioOutlined style={{ fontSize: 27 }}/><br/>
                 </div>
               )
