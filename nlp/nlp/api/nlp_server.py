@@ -151,11 +151,11 @@ def get_response():
                 _send_command(command, email_id, args)
 
         elif command == "speak_summary": # read the email out for the user
-            sender_name = _get_name_from_sender(df_session.curr_email_dict["from"])
-            # recipient_name = _get_name_from_sender(df_session.curr_email_dict["to"])
-            subject = df_session.curr_email_dict["subject"]
-            time = df_session.curr_email_dict["time"]
-            email_body = df_session.curr_email_dict["body"]
+            sender_name = _get_name_from_sender(df_session.query_email_dict["from"])
+            # recipient_name = _get_name_from_sender(df_session.query_email_dict["to"])
+            subject = df_session.query_email_dict["subject"]
+            time = df_session.query_email_dict["time"]
+            email_body = df_session.query_email_dict["body"]
 
             meta = {'title':subject, 'author':sender_name}
             summary = summarizer.summarize(email_body, meta=meta) # todo: set the summary args
@@ -168,11 +168,11 @@ def get_response():
             bot_response_dict["bot_text_end"] = " Do you want to know more about this email?"
 
         elif command == "speak_whole": # read the email out for the user
-            sender_name = _get_name_from_sender(df_session.curr_email_dict["from"])
-            # recipient_name = _get_name_from_sender(df_session.curr_email_dict["to"])
-            subject = df_session.curr_email_dict["subject"]
-            time = df_session.curr_email_dict["time"]
-            email_body = df_session.curr_email_dict["body"]
+            sender_name = _get_name_from_sender(df_session.query_email_dict["from"])
+            # recipient_name = _get_name_from_sender(df_session.query_email_dict["to"])
+            subject = df_session.query_email_dict["subject"]
+            time = df_session.query_email_dict["time"]
+            email_body = df_session.query_email_dict["body"]
             bot_response_dict["from"] = sender_name
             # bot_response_dict["to"] = recipient_name
             bot_response_dict["subject"] = subject
@@ -313,8 +313,8 @@ class Dialogflow_session:
     def __init__(self, session_id):
         self.curr_email_id = "" # id of curr email
         self.curr_email_dict = {} # dict of curr email
-        self.query_email_ids = [] # list of id from query
-        self.query_email_dicts = [] # list of dicts from query
+        self.query_email_id = [] # list of ids / a single id from query
+        self.query_email_dict = [] # list of dicts / a single dict from query
         self.project_id = PROJECT_ID
         self.session_id = session_id
         self.language_code = LANGUAGE_CODE
@@ -342,6 +342,8 @@ class Dialogflow_session:
             raise Exception("There should be only one latest email. Check if somethind went wrong.")
         self.curr_email_id = response[0]["id"]
         self.curr_email_dict = response[0]
+        self.query_email_id = response[0]["id"]
+        self.query_email_dict = response[0]
 
 
     def parse_command_dialogflow(self, text):
@@ -387,13 +389,19 @@ class Dialogflow_session:
                 ref_word = parameters.get("referencewords")
                 if ref_word is not None and ref_word != "":
                     if ref_word == "this email":
-                        pass
+                        # reset query email to current email
+                        self.query_email_id = self.curr_email_id
+                        self.query_email_dict = self.curr_email_dict
+                        email_ids = [self.curr_email_id]
                     elif ref_word == "next email":
                         self._get_next_or_prev_email("next")
                         email_ids = [self.curr_email_id]
                     elif ref_word == "previous email":
                         self._get_next_or_prev_email("prev")
                         email_ids = [self.curr_email_id]
+                    elif ref_word == "latest email":
+                        self._get_latest_email()
+                        email_ids = [self.query_email_id]
                     else:
                         raise ValueError(f"invalid ref word: {ref_word}")
                 else:
@@ -416,10 +424,10 @@ class Dialogflow_session:
                 next_day = date + datetime.timedelta(days=1)
                 query = f"label:INBOX after:{prev_day.isoformat()} before:{next_day.isoformat()}" # query exactly this day
                 self._query_backend_and_get_email(query) # modify self.email_id
-                email_ids = self.query_email_ids
+                email_ids = self.query_email_id # list
 
-            elif mode == "followup_this": # followup on the current email, e.g. Do you want to know more about this email? - Yes.
-                pass
+            elif mode == "followup_this": # followup on the active email, e.g. Do you want to know more about this email? - Yes.
+                email_ids = [self.query_email_id] # set the email_ids to the active email rather than the current email
             elif mode == "no_action":
                 pass
             else:
@@ -439,8 +447,8 @@ class Dialogflow_session:
         # print(response)
 
         # get email id and email content
-        self.query_email_ids = [email_dict["id"] for email_dict in response] # list of id
-        self.query_email_dicts = response # list of dicts
+        self.query_email_id = [email_dict["id"] for email_dict in response] # list of id
+        self.query_email_dict = response # list of dicts
 
     def _get_next_or_prev_email(self, command):
         assert command == "prev" or command == "next"
@@ -451,3 +459,16 @@ class Dialogflow_session:
             raise Exception("There should be only one email. Check if somethind went wrong.")
         self.curr_email_id = response[0]["id"]
         self.curr_email_dict = response[0]
+        self.query_email_id = response[0]["id"]
+        self.query_email_dict = response[0]
+    
+    def _get_latest_email(self):
+        command = "latest"
+        email_id = 0
+        args = {}
+        response = _send_command(command, email_id, args)  # list of dicts
+        if len(response) > 1:
+            raise Exception("There should be only one email. Check if somethind went wrong.")
+        # do not set the current email id to the latest email, but set the query email id
+        self.query_email_id = response[0]["id"]
+        self.query_email_dict = response[0]
