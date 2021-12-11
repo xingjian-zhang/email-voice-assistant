@@ -6,7 +6,6 @@ Demo Video (recorded by [@DiegoCao](https://github.com/DiegoCao)) : https://yout
 <img width="777" alt="image" src="https://user-images.githubusercontent.com/49838100/144513923-e075a8e6-ab95-4502-b086-1761dc58ad24.png">
 
 
-
 # Run
 ```
 $ python bin/run_all.py
